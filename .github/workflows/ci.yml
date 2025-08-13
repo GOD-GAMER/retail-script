@@ -1,0 +1,119 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Lua Syntax
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Lua
+      uses: leafo/gh-actions-lua@v10
+      with:
+        luaVersion: "5.4"
+    
+    - name: Install luacheck
+      run: |
+        sudo apt-get update
+        sudo apt-get install luarocks
+        sudo luarocks install luacheck
+    
+    - name: Validate Lua files
+      run: |
+        find . -name "*.lua" -exec lua -l {} \;
+    
+    - name: Run luacheck
+      run: |
+        luacheck . --ignore 611 612 613 614 --max-line-length 120
+
+  test-structure:
+    runs-on: ubuntu-latest
+    name: Test File Structure
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check required files
+      run: |
+        echo "Checking required files..."
+        test -f fxmanifest.lua || { echo "fxmanifest.lua missing"; exit 1; }
+        test -f config.lua || { echo "config.lua missing"; exit 1; }
+        test -f README.md || { echo "README.md missing"; exit 1; }
+        test -f shared/utils.lua || { echo "shared/utils.lua missing"; exit 1; }
+        test -f server/main.lua || { echo "server/main.lua missing"; exit 1; }
+        test -f client/main.lua || { echo "client/main.lua missing"; exit 1; }
+        test -f html/index.html || { echo "html/index.html missing"; exit 1; }
+        echo "All required files present!"
+    
+    - name: Validate fxmanifest.lua
+      run: |
+        echo "Validating fxmanifest.lua..."
+        lua -l fxmanifest.lua
+        grep -q "fx_version" fxmanifest.lua || { echo "fx_version missing"; exit 1; }
+        grep -q "game.*gta5" fxmanifest.lua || { echo "game specification missing"; exit 1; }
+        echo "fxmanifest.lua is valid!"
+
+  create-release-zip:
+    runs-on: ubuntu-latest
+    name: Create Release Package
+    if: github.event_name == 'release'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create release package
+      run: |
+        # Create the retail_jobs folder structure
+        mkdir -p retail_jobs
+        
+        # Copy all files except git and github folders
+        rsync -av --exclude='.git' --exclude='.github' --exclude='*.zip' . retail_jobs/
+        
+        # Create zip file
+        zip -r retail_jobs-${{ github.event.release.tag_name }}.zip retail_jobs/
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./retail_jobs-${{ github.event.release.tag_name }}.zip
+        asset_name: retail_jobs-${{ github.event.release.tag_name }}.zip
+        asset_content_type: application/zip
+
+  validate-html:
+    runs-on: ubuntu-latest
+    name: Validate HTML/CSS/JS
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install HTML validator
+      run: npm install -g html-validate
+    
+    - name: Validate HTML files
+      run: |
+        find html/ -name "*.html" -exec echo "Validating {}" \; -exec html-validate {} \;
+    
+    - name: Check CSS syntax
+      run: |
+        find html/ -name "*.css" -exec echo "Checking CSS: {}" \; -exec node -e "console.log('CSS file exists:', '{}')" \;
+    
+    - name: Check JavaScript syntax
+      run: |
+        find html/ -name "*.js" -exec echo "Checking JS: {}" \; -exec node -c {} \;

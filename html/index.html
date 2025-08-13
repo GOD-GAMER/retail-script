@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Jobs Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app" style="display: none;">
+        <!-- Main Dashboard -->
+        <div id="dashboard" class="screen active">
+            <div class="header">
+                <h1>Retail Jobs Dashboard</h1>
+                <div class="close-btn" onclick="closeUI()">&times;</div>
+            </div>
+            
+            <div class="content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Current Rank</h3>
+                        <div class="stat-value" id="current-rank">Trainee</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="rank-progress"></div>
+                        </div>
+                        <div class="stat-detail" id="experience-text">0 / 500 XP</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Today's Earnings</h3>
+                        <div class="stat-value" id="daily-earnings">$0</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Customers Served</h3>
+                        <div class="stat-value" id="customers-served">0</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3>Performance Rating</h3>
+                        <div class="stat-value" id="performance-rating">100%</div>
+                        <div class="rating-stars" id="rating-stars">
+                            ?????
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn primary" onclick="showScreen('cashier')">
+                        <i class="icon">??</i>
+                        Cashier System
+                    </button>
+                    <button class="btn secondary" onclick="showScreen('inventory')">
+                        <i class="icon">??</i>
+                        Inventory Management
+                    </button>
+                    <button class="btn tertiary" onclick="showScreen('performance')">
+                        <i class="icon">??</i>
+                        Performance Analytics
+                    </button>
+                    <button class="btn quaternary" onclick="showScreen('training')">
+                        <i class="icon">??</i>
+                        Training Modules
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cashier System -->
+        <div id="cashier" class="screen">
+            <div class="header">
+                <h1>Cashier System</h1>
+                <button class="back-btn" onclick="showScreen('dashboard')">? Back</button>
+            </div>
+            
+            <div class="content">
+                <div class="cashier-grid">
+                    <div class="customer-queue">
+                        <h3>Customer Queue</h3>
+                        <div id="customer-list" class="customer-list">
+                            <!-- Customers will be populated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="transaction-area">
+                        <h3>Current Transaction</h3>
+                        <div id="current-customer" class="current-customer">
+                            <div class="customer-info">
+                                <span class="customer-name">No customer selected</span>
+                                <span class="customer-mood">??</span>
+                            </div>
+                        </div>
+                        
+                        <div class="items-list" id="transaction-items">
+                            <!-- Transaction items will appear here -->
+                        </div>
+                        
+                        <div class="transaction-total">
+                            <div class="total-line">
+                                <span>Subtotal:</span>
+                                <span id="subtotal">$0.00</span>
+                            </div>
+                            <div class="total-line">
+                                <span>Tax:</span>
+                                <span id="tax">$0.00</span>
+                            </div>
+                            <div class="total-line final">
+                                <span>Total:</span>
+                                <span id="total">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="payment-buttons">
+                            <button class="btn primary" onclick="processPayment('cash')">Cash Payment</button>
+                            <button class="btn secondary" onclick="processPayment('card')">Card Payment</button>
+                            <button class="btn tertiary" onclick="cancelTransaction()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inventory Management -->
+        <div id="inventory" class="screen">
+            <div class="header">
+                <h1>Inventory Management</h1>
+                <button class="back-btn" onclick="showScreen('dashboard')">? Back</button>
+            </div>
+            
+            <div class="content">
+                <div class="inventory-controls">
+                    <button class="btn primary" onclick="refreshInventory()">Refresh</button>
+                    <button class="btn secondary" onclick="showRestockModal()">Restock Items</button>
+                    <input type="text" id="inventory-search" placeholder="Search products..." onkeyup="searchInventory()">
+                </div>
+                
+                <div class="inventory-grid" id="inventory-grid">
+                    <!-- Inventory items will be populated here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Performance Analytics -->
+        <div id="performance" class="screen">
+            <div class="header">
+                <h1>Performance Analytics</h1>
+                <button class="back-btn" onclick="showScreen('dashboard')">? Back</button>
+            </div>
+            
+            <div class="content">
+                <div class="analytics-grid">
+                    <div class="chart-container">
+                        <h3>Daily Sales</h3>
+                        <canvas id="sales-chart"></canvas>
+                    </div>
+                    
+                    <div class="metrics-panel">
+                        <h3>Key Metrics</h3>
+                        <div class="metric-item">
+                            <span class="metric-label">Average Transaction</span>
+                            <span class="metric-value" id="avg-transaction">$0.00</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Customer Satisfaction</span>
+                            <span class="metric-value" id="customer-satisfaction">100%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Items per Transaction</span>
+                            <span class="metric-value" id="items-per-transaction">0</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Service Speed</span>
+                            <span class="metric-value" id="service-speed">Fast</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="goals-section">
+                    <h3>Performance Goals</h3>
+                    <div class="goal-item">
+                        <div class="goal-info">
+                            <span class="goal-name">Daily Sales Target</span>
+                            <span class="goal-progress">$750 / $1000</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-item">
+                        <div class="goal-info">
+                            <span class="goal-name">Customer Service Excellence</span>
+                            <span class="goal-progress">85 / 100 points</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Training Modules -->
+        <div id="training" class="screen">
+            <div class="header">
+                <h1>Training Modules</h1>
+                <button class="back-btn" onclick="showScreen('dashboard')">? Back</button>
+            </div>
+            
+            <div class="content">
+                <div class="training-grid">
+                    <div class="training-module" data-module="customer-service">
+                        <div class="module-icon">??</div>
+                        <h3>Customer Service Excellence</h3>
+                        <p>Learn advanced customer service techniques and conflict resolution.</p>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <span>60% Complete</span>
+                        </div>
+                        <button class="btn primary" onclick="startTraining('customer-service')">Continue</button>
+                    </div>
+                    
+                    <div class="training-module" data-module="inventory-management">
+                        <div class="module-icon">??</div>
+                        <h3>Inventory Management</h3>
+                        <p>Master inventory tracking, restocking, and loss prevention.</p>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 30%"></div>
+                            </div>
+                            <span>30% Complete</span>
+                        </div>
+                        <button class="btn primary" onclick="startTraining('inventory-management')">Continue</button>
+                    </div>
+                    
+                    <div class="training-module" data-module="sales-techniques">
+                        <div class="module-icon">??</div>
+                        <h3>Advanced Sales Techniques</h3>
+                        <p>Upselling, cross-selling, and maximizing transaction value.</p>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span>Not Started</span>
+                        </div>
+                        <button class="btn secondary" onclick="startTraining('sales-techniques')">Start</button>
+                    </div>
+                    
+                    <div class="training-module" data-module="leadership">
+                        <div class="module-icon">??</div>
+                        <h3>Leadership & Management</h3>
+                        <p>Develop leadership skills for supervisory roles.</p>
+                        <div class="module-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 0%"></div>
+                            </div>
+                            <span>Locked - Rank 4 Required</span>
+                        </div>
+                        <button class="btn disabled" disabled>Locked</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    <div id="restock-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Restock Inventory</h2>
+                <span class="close" onclick="closeModal('restock-modal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="restock-form">
+                    <div class="form-group">
+                        <label for="restock-item">Select Item:</label>
+                        <select id="restock-item">
+                            <!-- Options populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="restock-quantity">Quantity:</label>
+                        <input type="number" id="restock-quantity" min="1" max="100" value="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="restock-cost">Cost per Item:</label>
+                        <input type="number" id="restock-cost" step="0.01" min="0">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn primary" onclick="confirmRestock()">Confirm Restock</button>
+                <button class="btn secondary" onclick="closeModal('restock-modal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification System -->
+    <div id="notifications" class="notifications">
+        <!-- Notifications will be added here -->
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
