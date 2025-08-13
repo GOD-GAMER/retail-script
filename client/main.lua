@@ -17,6 +17,7 @@ local jobType = nil
 local npcCustomers = {}
 local isFirstTimePlayer = true
 local lastInteractionTime = 0
+local interactionMenuOpen = false -- Track menu state
 
 -- Current interaction state (prevent flickering)
 local activeInteraction = nil
@@ -148,39 +149,19 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
             storeId = store.id,
             jobType = store.type,
             action = function()
-                local timeSinceLastInteraction = currentTime - lastInteractionTime
-                if timeSinceLastInteraction < Config.Interactions.cooldown then 
-                    if Config.Debug then
-                        print('[RETAIL] Interaction on cooldown (' .. timeSinceLastInteraction .. 'ms < ' .. Config.Interactions.cooldown .. 'ms)')
-                    end
-                    return 
-                end
-                lastInteractionTime = currentTime
-                
-                if Config.Debug then
-                    print('[RETAIL] Executing clock in/out action')
-                    print('[RETAIL] On duty: ' .. tostring(onDuty))
-                    print('[RETAIL] Current store ID: ' .. tostring(currentStoreId))
-                    print('[RETAIL] Target store ID: ' .. tostring(store.id))
-                    print('[RETAIL] Cooldown cleared, proceeding...')
-                end
-                
-                if not onDuty then
-                    ClockIn(store.id, store.type)
-                elseif currentStoreId == store.id then
-                    ClockOut()
-                else
-                    ShowNotification('You must clock out of your current job first', 'error')
+                -- Redirect to menu system instead of direct action
+                if not interactionMenuOpen then
+                    ShowNotification('~b~Use ~g~/retailjob~w~ to access job options', 'info', 3000)
                 end
             end
         }
         
         if not onDuty then
-            interaction.text = '~g~[Numpad 2]~w~ Clock In - ' .. store.name
+            interaction.text = '~g~[/retailjob]~w~ Clock In - ' .. store.name
         elseif onDuty and currentStoreId == store.id then
-            interaction.text = '~r~[Numpad 2]~w~ Clock Out'
+            interaction.text = '~r~[/retailjob]~w~ Clock Out'
         else
-            interaction.text = '~y~[Numpad 2]~w~ Clock out of current job first'
+            interaction.text = '~y~[/retailjob]~w~ Job Options'
         end
         
         return interaction
@@ -205,11 +186,10 @@ function CheckWorkStationInteractions(store, playerCoords, currentTime)
                 priority = Config.Interactions.priorities.workStation,
                 coords = coords,
                 height = 0.8,
-                text = '~b~[Numpad 2]~w~ ' .. GetWorkStationText(stationType),
+                text = '~b~[/retailjob]~w~ ' .. GetWorkStationText(stationType),
                 action = function()
-                    if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
-                    lastInteractionTime = currentTime
-                    PerformWorkStationAction(stationType, store)
+                    -- Redirect to menu system
+                    ShowNotification('~b~Use ~g~/retailjob~w~ to access work stations', 'info', 3000)
                 end
             }
             
@@ -230,11 +210,10 @@ function CheckCustomerInteractions(playerCoords, currentTime)
             priority = Config.Interactions.priorities.customer,
             coords = playerCoords,
             height = 0.5,
-            text = '~y~[G]~w~ Serve Customer (' .. #nearbyCustomers .. ' nearby)',
+            text = '~y~[/retailjob]~w~ Serve Customer (' .. #nearbyCustomers .. ' nearby)',
             action = function()
-                if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
-                lastInteractionTime = currentTime
-                QuickServeNearestCustomer()
+                -- Redirect to menu system for customer service
+                ShowNotification('~b~Use ~g~/retailjob~w~ to access customer service options', 'info', 3000)
             end
         }
     end
@@ -242,31 +221,14 @@ function CheckCustomerInteractions(playerCoords, currentTime)
     return nil
 end
 
--- Event handlers for keybind events
+-- Event handlers for the new command-based system
 RegisterNetEvent('retail:localInteract')
 AddEventHandler('retail:localInteract', function()
-    if Config.Debug then
-        print('[RETAIL] Interact key pressed')
-    end
-    
-    if activeInteraction and activeInteraction.action then
-        if Config.Debug then
-            print('[RETAIL] Executing interaction: ' .. activeInteraction.type)
-        end
-        
-        local currentTime = GetGameTimer()
-        if currentTime - lastInteractionTime > Config.Interactions.cooldown then
-            lastInteractionTime = currentTime
-            activeInteraction.action()
-        else
-            if Config.Debug then
-                print('[RETAIL] Interaction on cooldown')
-            end
-        end
+    -- Redirect to new proximity system
+    if isNearStore then
+        TriggerEvent('retail:openJobMenu')
     else
-        if Config.Debug then
-            print('[RETAIL] No active interaction found')
-        end
+        ShowNotification('~r~You must be near a store to interact~w~\nUse ~g~/retailjob~w~ when close to a store', 'error', 5000)
     end
 end)
 
@@ -274,6 +236,8 @@ RegisterNetEvent('retail:localOpenMenu')
 AddEventHandler('retail:localOpenMenu', function()
     if onDuty then
         OpenJobMenu()
+    else
+        ShowNotification('~r~You must be working to access the job menu~w~\nUse ~g~/retailjob~w~ near a store to clock in', 'error', 5000)
     end
 end)
 
@@ -281,6 +245,8 @@ RegisterNetEvent('retail:localQuickServe')
 AddEventHandler('retail:localQuickServe', function()
     if onDuty then
         QuickServeNearestCustomer()
+    else
+        ShowNotification('~r~You must be working to serve customers~w~', 'error')
     end
 end)
 

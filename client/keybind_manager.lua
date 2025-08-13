@@ -1,235 +1,319 @@
--- Keybind Management System
-local KeybindManager = {}
+-- Proximity-Based Interaction Manager for Retail Jobs
+-- No keybinds required - uses automatic proximity detection and menu system
 
--- Initialize default keybinds
-function KeybindManager.Initialize()
-    -- Register keybinds with FiveM's native system
-    RegisterKeyMapping('retail_interact', 'Retail Jobs: Interact', 'keyboard', 'NUMPAD2')
-    RegisterKeyMapping('retail_menu', 'Retail Jobs: Open Job Menu', 'keyboard', 'F6')
-    RegisterKeyMapping('retail_quickserve', 'Retail Jobs: Quick Serve Customer', 'keyboard', 'G')
+local ProximityManager = {}
+local isNearStore = false
+local currentStoreProximity = nil
+local interactionMenuOpen = false
+local autoInteractionEnabled = true
 
-    -- Load saved keybinds from client storage
-    KeybindManager.LoadKeybinds()
-end
-
--- Load keybinds from client storage
-function KeybindManager.LoadKeybinds()
-    local savedKeybinds = GetResourceKvpString('retail_keybinds')
-    if savedKeybinds then
-        local decodedKeybinds = json.decode(savedKeybinds)
-        if decodedKeybinds then
-            playerKeybinds = decodedKeybinds
-        end
+-- Initialize the proximity-based system
+function ProximityManager.Initialize()
+    -- No keybind registration needed
+    if Config.Debug then
+        print('[RETAIL] Proximity-based interaction system initialized')
     end
 end
 
--- Open keybind configuration menu
-function KeybindManager.OpenKeybindMenu()
-    if isKeybindMenuOpen then return end
-    
-    isKeybindMenuOpen = true
-    
-    local elements = {
-        {
-            label = 'Interact: ' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('interact')),
-            value = 'interact',
-            description = 'Key used to interact with work stations and customers'
-        },
-        {
-            label = 'Job Menu: ' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('menu')),
-            value = 'menu',
-            description = 'Key used to open the job management menu'
-        },
-        {
-            label = 'Quick Serve: ' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('quick_serve')),
-            value = 'quick_serve',
-            description = 'Key used to quickly serve the nearest customer'
-        },
-        {
-            label = 'Keybind Menu: ' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('keybind_menu')),
-            value = 'keybind_menu',
-            description = 'Key used to open this keybind configuration menu'
-        },
-        {
-            label = 'Reset to Defaults',
-            value = 'reset',
-            description = 'Reset all keybinds to default values'
-        },
-        {
-            label = 'Close Menu',
-            value = 'close',
-            description = 'Close this menu'
-        }
-    }
-    
-    -- Use your preferred menu system here
-    ShowKeybindMenu(elements)
-end
-
-function ShowKeybindMenu(elements)
-    -- For now, use a simple notification-based system
-    -- This should be replaced with your actual menu system
-    
-    ShowNotification('~b~Keybind Configuration~w~', 'info', 3000)
-    ShowNotification('Current Interact Key: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('interact')), 'info', 5000)
-    ShowNotification('Current Menu Key: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('menu')), 'info', 5000)
-    ShowNotification('Current Quick Serve Key: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('quick_serve')), 'info', 5000)
-    ShowNotification('~g~Type /setkeybind [action] to change keybinds~w~', 'success', 10000)
-    ShowNotification('~g~Available actions: interact, menu, quick_serve~w~', 'success', 10000)
-    
-    isKeybindMenuOpen = false
-end
-
--- Close keybind menu
-function KeybindManager.CloseKeybindMenu()
-    isKeybindMenuOpen = false
-    awaitingKeybind = nil
-end
-
--- Handle keybind selection
-function KeybindManager.HandleKeybindSelection(action)
-    if action == 'reset' then
-        KeybindManager.ResetKeybinds()
-        return
-    elseif action == 'close' then
-        KeybindManager.CloseKeybindMenu()
-        return
-    end
-    
-    awaitingKeybind = action
-    ShowNotification('Press any key to set as ' .. action .. ' key...', 'info', 5000)
-    ShowNotification('Press ESC to cancel', 'info', 3000)
-end
-
--- Reset keybinds to defaults
-function KeybindManager.ResetKeybinds()
-    playerKeybinds = {
-        interact = Config.UI.keybinds.interact,
-        menu = Config.UI.keybinds.menu,
-        quick_serve = Config.UI.keybinds.quick_serve,
-        keybind_menu = Config.UI.keybinds.keybind_menu
-    }
-    KeybindManager.SaveKeybinds()
-    ShowNotification('Keybinds reset to defaults!', 'success')
-    KeybindManager.CloseKeybindMenu()
-end
-
--- Check if waiting for keybind input
-function KeybindManager.IsAwaitingKeybind()
-    return awaitingKeybind ~= nil
-end
-
--- Handle new keybind input
-function KeybindManager.HandleKeybindInput(keybind)
-    if not awaitingKeybind then return false end
-    
-    if keybind == 200 then -- ESC key
-        ShowNotification('Keybind change cancelled', 'info')
-        awaitingKeybind = nil
-        return true
-    end
-    
-    -- Check if keybind is already in use
-    for action, currentKeybind in pairs(playerKeybinds) do
-        if currentKeybind == keybind and action ~= awaitingKeybind then
-            ShowNotification('Key already in use for ' .. action .. '!', 'error')
-            awaitingKeybind = nil
-            return true
-        end
-    end
-    
-    -- Set new keybind
-    local oldKeybind = KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind(awaitingKeybind))
-    local newKeybind = KeybindManager.GetKeybindLabel(keybind)
-    
-    KeybindManager.SetKeybind(awaitingKeybind, keybind)
-    ShowNotification(awaitingKeybind .. ' key changed from ' .. oldKeybind .. ' to ' .. newKeybind, 'success')
-    
-    awaitingKeybind = nil
-    return true
-end
-
--- Command to set keybinds via chat
-RegisterCommand('setkeybind', function(source, args)
-    if #args ~= 1 then
-        ShowNotification('Usage: /setkeybind [interact/menu/quick_serve]', 'error')
-        return
-    end
-    
-    local action = args[1]:lower()
-    if not playerKeybinds[action] then
-        ShowNotification('Invalid action. Available: interact, menu, quick_serve', 'error')
-        return
-    end
-    
-    KeybindManager.HandleKeybindSelection(action)
-end)
-
--- Command to show current keybinds
-RegisterCommand('keybinds', function()
-    ShowNotification('~b~Current Keybinds:~w~', 'info', 2000)
-    ShowNotification('Interact: ~y~Numpad 2', 'info', 5000)
-    ShowNotification('Menu: ~y~F6', 'info', 5000)
-    ShowNotification('Quick Serve: ~y~G', 'info', 5000)
-end)
-
--- ESX-Compatible Keybind Manager for Retail Jobs
--- This system avoids conflicts with other ESX job resources
-
-local isKeyPressed = false
-local keyPressTimer = 0
-
--- Simple key detection without RegisterKeyMapping to avoid conflicts
+-- Main proximity detection loop
 Citizen.CreateThread(function()
     while true do
-        Citizen.Wait(0)
+        local playerPed = PlayerPedId()
+        local playerCoords = GetEntityCoords(playerPed)
+        local sleep = 1000
         
-        -- Check for Numpad 2 key press (interact) - Control ID 97
-        if IsControlJustPressed(0, 97) then -- Numpad 2 key
-            if not isKeyPressed then
-                isKeyPressed = true
-                keyPressTimer = GetGameTimer()
-                TriggerEvent('retail:localInteract')
+        -- Check if player is near any store
+        local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
+        
+        if closestStore and distance < Config.Interactions.distances.clockInOut then
+            sleep = 100
+            
+            if not isNearStore then
+                isNearStore = true
+                currentStoreProximity = closestStore
+                
+                -- Show proximity notification
+                ShowNotification('~b~Near ' .. closestStore.name .. '~w~\nUse ~g~/retailjob~w~ to see options', 'info', 3000)
+                
+                if Config.Debug then
+                    print('[RETAIL] Player entered proximity of: ' .. closestStore.name)
+                end
+            end
+        else
+            if isNearStore then
+                isNearStore = false
+                currentStoreProximity = nil
+                
+                if interactionMenuOpen then
+                    CloseInteractionMenu()
+                end
+                
+                if Config.Debug then
+                    print('[RETAIL] Player left store proximity')
+                end
             end
         end
         
-        -- Check for F6 key press (job menu)
-        if IsControlJustPressed(0, 167) then -- F6 key
-            TriggerEvent('retail:localOpenMenu')
-        end
-        
-        -- Check for G key press (quick serve)
-        if IsControlJustPressed(0, 47) then -- G key
-            TriggerEvent('retail:localQuickServe')
-        end
-        
-        -- Reset key press state after 1 second
-        if isKeyPressed and GetGameTimer() - keyPressTimer > 1000 then
-            isKeyPressed = false
-        end
+        Citizen.Wait(sleep)
     end
 end)
 
--- Commands as backup method
+-- Open interaction menu when near a store
+function OpenInteractionMenu()
+    if not currentStoreProximity then
+        ShowNotification('~r~You must be near a store to access job options', 'error')
+        return
+    end
+    
+    if interactionMenuOpen then return end
+    
+    interactionMenuOpen = true
+    local store = currentStoreProximity
+    
+    if Config.Framework == 'esx' and ESX then
+        local elements = {}
+        
+        -- Clock in/out options
+        if not onDuty then
+            table.insert(elements, {
+                label = '?? Clock In - ' .. store.name,
+                value = 'clock_in',
+                description = 'Start working at this location'
+            })
+        elseif onDuty and currentStoreId == store.id then
+            table.insert(elements, {
+                label = '?? Clock Out',
+                value = 'clock_out', 
+                description = 'End your shift and receive payment'
+            })
+        else
+            table.insert(elements, {
+                label = '?? Clock out of current job first',
+                value = 'clock_out_other',
+                description = 'You are working at another location'
+            })
+        end
+        
+        -- Work station options (when on duty)
+        if onDuty and currentStoreId == store.id then
+            table.insert(elements, {
+                label = '?? Work Stations',
+                value = 'work_stations',
+                description = 'Access cashier, inventory, and other stations'
+            })
+            
+            table.insert(elements, {
+                label = '?? Job Menu',
+                value = 'job_menu',
+                description = 'View stats, training, and management'
+            })
+        end
+        
+        -- Training for all players
+        table.insert(elements, {
+            label = '?? Training Info',
+            value = 'training_info',
+            description = 'Learn about working here'
+        })
+        
+        -- Close option
+        table.insert(elements, {
+            label = '? Close',
+            value = 'close',
+            description = 'Close this menu'
+        })
+        
+        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'retail_interaction', {
+            title = store.name .. ' - Job Options',
+            align = 'top-left',
+            elements = elements
+        }, function(data, menu)
+            HandleMenuSelection(data.current.value, menu)
+        end, function(data, menu)
+            CloseInteractionMenu()
+        end)
+        
+    else
+        -- Fallback for other frameworks
+        ShowNotification('~b~' .. store.name .. ' Options:~w~\n~g~/clockin~w~ - Start work\n~r~/clockout~w~ - End work\n~y~/retailmenu~w~ - Job menu', 'info', 8000)
+        interactionMenuOpen = false
+    end
+end
+
+-- Handle menu selections
+function HandleMenuSelection(value, menu)
+    local store = currentStoreProximity
+    
+    if value == 'clock_in' then
+        ClockIn(store.id, store.type)
+        menu.close()
+        
+    elseif value == 'clock_out' then
+        ClockOut()
+        menu.close()
+        
+    elseif value == 'clock_out_other' then
+        ShowNotification('You must go to your current workplace to clock out', 'error')
+        
+    elseif value == 'work_stations' then
+        menu.close()
+        OpenWorkStationsMenu()
+        
+    elseif value == 'job_menu' then
+        menu.close()
+        OpenJobMenu()
+        
+    elseif value == 'training_info' then
+        ShowTrainingInfo(store)
+        
+    elseif value == 'close' then
+        menu.close()
+    end
+end
+
+-- Work stations submenu
+function OpenWorkStationsMenu()
+    if not currentStoreProximity or not onDuty then return end
+    
+    local store = currentStoreProximity
+    local elements = {}
+    
+    if store.workStations then
+        for stationType, coords in pairs(store.workStations) do
+            local playerCoords = GetEntityCoords(PlayerPedId())
+            local distance = RetailJobs.GetDistance(playerCoords, coords)
+            local accessible = distance < Config.Interactions.distances.workStation
+            
+            table.insert(elements, {
+                label = accessible and ('? ' .. GetWorkStationName(stationType)) or ('? ' .. GetWorkStationName(stationType) .. ' (too far)'),
+                value = accessible and stationType or 'too_far',
+                description = accessible and ('Use the ' .. stationType .. ' station') or ('Move closer to access')
+            })
+        end
+    end
+    
+    table.insert(elements, {
+        label = '?? Back',
+        value = 'back',
+        description = 'Return to main menu'
+    })
+    
+    if Config.Framework == 'esx' and ESX then
+        ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'work_stations', {
+            title = 'Work Stations',
+            align = 'top-left',
+            elements = elements
+        }, function(data, menu)
+            if data.current.value == 'back' then
+                menu.close()
+                OpenInteractionMenu()
+            elseif data.current.value ~= 'too_far' then
+                PerformWorkStationAction(data.current.value, store)
+                menu.close()
+            else
+                ShowNotification('Move closer to access this station', 'error')
+            end
+        end, function(data, menu)
+            CloseInteractionMenu()
+        end)
+    end
+end
+
+function GetWorkStationName(stationType)
+    local names = {
+        cashier = 'Cashier Register',
+        kitchen = 'Kitchen',
+        inventory = 'Inventory Management',
+        office = 'Manager Office',
+        drive_thru = 'Drive-Thru Window'
+    }
+    return names[stationType] or stationType
+end
+
+function ShowTrainingInfo(store)
+    local info = string.format([[:
+~b~%s - Job Information~w~
+
+~g~Job Type:~w~ %s
+~g~Available Positions:~w~ Various roles available
+~g~Starting Salary:~w~ $%d per hour
+
+~y~How to Work:~w~
+1. Use /retailjob near the store
+2. Select "Clock In" to start working
+3. Access work stations when on duty
+4. Serve customers and gain experience
+5. Clock out to receive payment
+
+~g~Progression:~w~
+Start as Trainee and work up to CEO!
+Gain experience by serving customers.
+]], store.name, store.type, Config.Jobs[store.type] and Config.Jobs[store.type].paycheck.base or 50)
+    
+    ShowNotification(info, 'info', 15000)
+end
+
+-- Close interaction menu
+function CloseInteractionMenu()
+    interactionMenuOpen = false
+    if Config.Framework == 'esx' and ESX then
+        ESX.UI.Menu.CloseAll()
+    end
+end
+
+-- Commands for interaction
+RegisterCommand('retailjob', function()
+    if isNearStore then
+        OpenInteractionMenu()
+    else
+        ShowNotification('~r~You must be near a store to access job options~w~\nLook for store blips on the map', 'error', 5000)
+    end
+end, false)
+
+-- Alternative commands
+RegisterCommand('clockin', function()
+    if isNearStore and not onDuty then
+        ClockIn(currentStoreProximity.id, currentStoreProximity.type)
+    else
+        ShowNotification('You must be near a store and not already working', 'error')
+    end
+end, false)
+
+RegisterCommand('clockout', function()
+    if onDuty then
+        ClockOut()
+    else
+        ShowNotification('You are not currently working', 'error')
+    end
+end, false)
+
+-- Help command
 RegisterCommand('retailhelp', function()
     local helpText = [[
-^3=== RETAIL JOBS CONTROLS ===^0
-^2Numpad 2^0 - Interact with stores/stations
-^2F6^0 - Open job menu  
-^2G^0 - Quick serve customers
+^3=== RETAIL JOBS - NO KEYBINDS SYSTEM ===^0
+^2/retailjob^0 - Open job menu (when near store)
+^2/clockin^0 - Quick clock in (when near store)
+^2/clockout^0 - Quick clock out (anywhere)
+^2/retailmenu^0 - Open job dashboard (when working)
 
-^3=== COMMANDS ===^0
-^2/retailhelp^0 - Show this help
-^2/retailmenu^0 - Open job menu
-^2/retailinteract^0 - Manual interact
-^2/retaildebug^0 - Show debug information
-^2/retailreset^0 - Reset interaction cooldown
+^3=== HOW TO START WORKING ===^0
+1. Go to any store (look for blips on map)
+2. Get close to the store entrance
+3. Type ^2/retailjob^0 to see options
+4. Select "Clock In" from the menu
+5. Use work stations when on duty
 
-^3=== TROUBLESHOOTING ===^0
-If clock in/out isn't working:
-1. Try ^2/retailreset^0 to clear cooldowns
-2. Use ^2/retaildebug^0 to check status
-3. Make sure you're near the store entrance
+^3=== STORE LOCATIONS ===^0
+• Downtown General Store
+• Sandy Shores Market  
+• Burger Shot Downtown
+• Cluckin Bell Paleto
+
+^3=== FEATURES ===^0
+• No keybinds required!
+• Automatic proximity detection
+• Menu-based interactions
+• Command alternatives available
     ]]
     TriggerEvent('chat:addMessage', {
         color = {255, 255, 255},
@@ -238,21 +322,56 @@ If clock in/out isn't working:
     })
 end)
 
+-- Job menu command (when working)
 RegisterCommand('retailmenu', function()
-    TriggerEvent('retail:localOpenMenu')
+    if onDuty then
+        OpenJobMenu()
+    else
+        ShowNotification('You must be working to access the job menu', 'error')
+    end
 end)
 
-RegisterCommand('retailinteract', function()
-    TriggerEvent('retail:localInteract')
-end)
-
--- Export the interaction function for other resources
-exports('triggerInteract', function()
-    TriggerEvent('retail:localInteract')
-end)
+-- Debug command
+RegisterCommand('retaildebug', function()
+    local playerCoords = GetEntityCoords(PlayerPedId())
+    local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
+    
+    local debugInfo = string.format([[:
+^3=== RETAIL JOBS DEBUG (NO KEYBINDS) ===^0
+^2System Type:^0 Proximity-Based (No Keybinds)
+^2Player Position:^0 %.2f, %.2f, %.2f
+^2Near Store:^0 %s
+^2Current Store:^0 %s
+^2Distance:^0 %.2f
+^2On Duty:^0 %s
+^2Menu Available:^0 %s
+    ]], 
+    playerCoords.x, playerCoords.y, playerCoords.z,
+    isNearStore and "Yes" or "No",
+    currentStoreProximity and currentStoreProximity.name or "None",
+    distance or 0,
+    onDuty and "Yes" or "No",
+    isNearStore and "Yes (/retailjob)" or "No"
+    )
+    
+    TriggerEvent('chat:addMessage', {
+        color = {255, 255, 255},
+        multiline = true,
+        args = {"Retail Debug", debugInfo}
+    })
+end, false)
 
 -- Export functions
-_G.KeybindManager = KeybindManager
+_G.ProximityManager = ProximityManager
 
--- Initialize when script loads
-KeybindManager.Initialize()
+-- Initialize the system
+ProximityManager.Initialize()
+
+-- Disable old keybind events
+RegisterNetEvent('retail:localInteract')
+AddEventHandler('retail:localInteract', function()
+    -- Redirect to new system
+    if isNearStore then
+        OpenInteractionMenu()
+    end
+end)

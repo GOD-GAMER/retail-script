@@ -208,17 +208,24 @@ Config.Optimization = {
     enableLOD = true
 }
 
--- UI Settings with FiveM Native Keybinds
+-- UI Settings with Command-Based Interaction System
 Config.UI = {
     notifications = {
         position = 'top-right',
         duration = 5000
     },
-    -- Note: Keybinds are now managed by FiveM's native system
-    -- Players can customize them in: Settings > Key Bindings > FiveM
-    keybindInfo = {
-        interact = "retail_interact", -- FiveM keybind name
-        menu = "retail_menu",         -- FiveM keybind name  
-        quick_serve = "retail_quickserve" -- FiveM keybind name
+    -- New command-based interaction system (no keybinds required)
+    interactionSystem = {
+        type = 'proximity_commands', -- proximity_commands, keybinds, mixed
+        proximityDistance = 4.0,     -- Distance to show interaction prompts
+        autoDetection = true,        -- Automatically detect when near stores
+        commandBased = true          -- Use commands instead of keybinds
+    },
+    commands = {
+        main_interaction = "/retailjob",    -- Primary interaction command
+        quick_clockin = "/clockin",         -- Quick clock in command
+        quick_clockout = "/clockout",       -- Quick clock out command
+        job_menu = "/retailmenu",          -- Job dashboard command
+        help = "/retailhelp"               -- Help command
     }
 }
