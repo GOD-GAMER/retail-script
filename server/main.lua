@@ -102,6 +102,10 @@ RegisterNetEvent('retail:clockIn')
 AddEventHandler('retail:clockIn', function(storeId, jobType)
     local playerId = source
     
+    if Config.Debug then
+        print('[RETAIL] Clock in request from player ' .. playerId .. ' for store ' .. tostring(storeId) .. ' (' .. tostring(jobType) .. ')')
+    end
+    
     if not playerJobs[playerId] then
         playerJobs[playerId] = {
             job = nil,
@@ -120,8 +124,32 @@ AddEventHandler('retail:clockIn', function(storeId, jobType)
         }
     end
     
-    local store = Config.Stores[storeId]
-    if not store then return end
+    -- Validate store exists
+    local store = nil
+    for i, storeData in ipairs(Config.Stores) do
+        if storeData.id == storeId then
+            store = storeData
+            break
+        end
+    end
+    
+    if not store then
+        TriggerClientEvent('retail:notify', playerId, 'Invalid store location!', 'error')
+        if Config.Debug then
+            print('[RETAIL] Invalid store ID: ' .. tostring(storeId))
+        end
+        return
+    end
+    
+    if Config.Debug then
+        print('[RETAIL] Found valid store: ' .. store.name)
+    end
+    
+    -- Check if player is already on duty
+    if playerJobs[playerId].onDuty then
+        TriggerClientEvent('retail:notify', playerId, 'You are already clocked in! Clock out first.', 'error')
+        return
+    end
     
     -- Check if player can work at this store
     local currentEmployees = 0
@@ -139,6 +167,10 @@ AddEventHandler('retail:clockIn', function(storeId, jobType)
     
     -- Handle new player bonus
     if playerJobs[playerId].isNewPlayer and playerJobs[playerId].experience == 0 and Config.NewPlayerBonus.enabled then
+        if Config.Debug then
+            print('[RETAIL] Applying new player bonus to player ' .. playerId)
+        end
+        
         playerJobs[playerId].experience = Config.NewPlayerBonus.startingExperience
         playerJobs[playerId].isNewPlayer = false
         
@@ -161,15 +193,24 @@ AddEventHandler('retail:clockIn', function(storeId, jobType)
         SavePlayerJobData(playerId)
     end
     
+    -- Clock in the player
     playerJobs[playerId].job = jobType
     playerJobs[playerId].onDuty = true
     playerJobs[playerId].storeId = storeId
     playerJobs[playerId].stats.shiftsWorked = playerJobs[playerId].stats.shiftsWorked + 1
     
+    if not storeData[storeId] then
+        storeData[storeId] = { employees = {}, products = {}, revenue = 0, dailyRevenue = 0 }
+    end
+    
     table.insert(storeData[storeId].employees, playerId)
     
     TriggerClientEvent('retail:clockedIn', playerId, storeId, jobType)
     TriggerClientEvent('retail:notify', playerId, 'You have clocked in at ' .. store.name, 'success')
+    
+    if Config.Debug then
+        print('[RETAIL] Player ' .. playerId .. ' successfully clocked in at ' .. store.name)
+    end
     
     -- Notify other employees
     for _, empId in ipairs(storeData[storeId].employees) do
@@ -183,12 +224,24 @@ RegisterNetEvent('retail:clockOut')
 AddEventHandler('retail:clockOut', function()
     local playerId = source
     
+    if Config.Debug then
+        print('[RETAIL] Clock out request from player ' .. playerId)
+    end
+    
     if not playerJobs[playerId] or not playerJobs[playerId].onDuty then
+        TriggerClientEvent('retail:notify', playerId, 'You are not currently clocked in!', 'error')
+        if Config.Debug then
+            print('[RETAIL] Player ' .. playerId .. ' tried to clock out but is not on duty')
+        end
         return
     end
     
     local storeId = playerJobs[playerId].storeId
     local earnings = playerJobs[playerId].earnings
+    
+    if Config.Debug then
+        print('[RETAIL] Player ' .. playerId .. ' clocking out from store ' .. tostring(storeId) .. ' with earnings: $' .. earnings)
+    end
     
     -- Calculate final paycheck
     local rank = playerJobs[playerId].rank
@@ -216,6 +269,10 @@ AddEventHandler('retail:clockOut', function()
     
     TriggerClientEvent('retail:clockedOut', playerId, finalPay)
     TriggerClientEvent('retail:notify', playerId, 'You have clocked out. Earned: $' .. finalPay, 'success')
+    
+    if Config.Debug then
+        print('[RETAIL] Player ' .. playerId .. ' successfully clocked out, earned: $' .. finalPay)
+    end
     
     -- Save data
     SavePlayerJobData(playerId)
@@ -406,6 +463,27 @@ RegisterNetEvent('retail:requestPlayerData')
 AddEventHandler('retail:requestPlayerData', function()
     local playerId = source
     TriggerClientEvent('retail:receivePlayerData', playerId, playerJobs[playerId])
+end)
+
+-- Enhanced first time bonus event
+RegisterNetEvent('retail:firstTimeBonus')
+AddEventHandler('retail:firstTimeBonus', function()
+    local playerId = source
+    
+    if playerJobs[playerId] and playerJobs[playerId].isNewPlayer then
+        -- Give first time bonus
+        TriggerEvent('retail:addExperience', playerId, Config.Experience.first_clock_in, 'First Time Clock In Bonus')
+        
+        -- Mark as no longer new player
+        playerJobs[playerId].isNewPlayer = false
+        
+        -- Save updated data
+        SavePlayerJobData(playerId)
+        
+        if Config.Debug then
+            print('[RETAIL] First time bonus applied to player ' .. playerId)
+        end
+    end
 end)
 
 -- Cleanup when player disconnects

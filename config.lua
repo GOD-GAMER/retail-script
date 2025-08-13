@@ -76,6 +76,7 @@ Config.Interactions = {
 Config.Stores = {
     -- Retail Stores
     {
+        id = 1,
         type = 'retail',
         name = 'Downtown General Store',
         coords = vector3(25.7, -1347.3, 29.49),
@@ -95,6 +96,7 @@ Config.Stores = {
         }
     },
     {
+        id = 2,
         type = 'retail',
         name = 'Sandy Shores Market',
         coords = vector3(1961.3, 3740.0, 32.34),
@@ -114,6 +116,7 @@ Config.Stores = {
     },
     -- Fast Food Stores
     {
+        id = 3,
         type = 'fastfood',
         name = 'Burger Shot Downtown',
         coords = vector3(-1194.26, -884.88, 13.98),
@@ -134,6 +137,7 @@ Config.Stores = {
         }
     },
     {
+        id = 4,
         type = 'fastfood',
         name = 'Cluckin Bell Paleto',
         coords = vector3(-142.77, 6356.09, 31.49),

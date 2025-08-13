@@ -145,14 +145,30 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
             priority = Config.Interactions.priorities.clockInOut,
             coords = clockCoords,
             height = 1.2,
+            storeId = store.id,
+            jobType = store.type,
             action = function()
-                if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
+                if currentTime - lastInteractionTime < Config.Interactions.cooldown then 
+                    if Config.Debug then
+                        print('[RETAIL] Interaction on cooldown')
+                    end
+                    return 
+                end
                 lastInteractionTime = currentTime
+                
+                if Config.Debug then
+                    print('[RETAIL] Executing clock in/out action')
+                    print('[RETAIL] On duty: ' .. tostring(onDuty))
+                    print('[RETAIL] Current store ID: ' .. tostring(currentStoreId))
+                    print('[RETAIL] Target store ID: ' .. tostring(store.id))
+                end
                 
                 if not onDuty then
                     ClockIn(store.id, store.type)
                 elseif currentStoreId == store.id then
                     ClockOut()
+                else
+                    ShowNotification('You must clock out of your current job first', 'error')
                 end
             end
         }
@@ -161,6 +177,8 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
             interaction.text = '~g~[E]~w~ Clock In - ' .. store.name
         elseif onDuty and currentStoreId == store.id then
             interaction.text = '~r~[E]~w~ Clock Out'
+        else
+            interaction.text = '~y~[E]~w~ Clock out of current job first'
         end
         
         return interaction
@@ -292,7 +310,11 @@ end
 
 -- Clock In/Out Functions
 function ClockIn(storeId, jobType)
-    RetailJobs.DebugPrint('Attempting to clock in at store ' .. storeId, 'debug')
+    RetailJobs.DebugPrint('Attempting to clock in at store ' .. storeId .. ' (job type: ' .. jobType .. ')', 'debug')
+    
+    -- Show immediate feedback
+    ShowNotification('Clocking in...', 'info', 2000)
+    
     TriggerServerEvent('retail:clockIn', storeId, jobType)
     
     -- Check if this is the player's first time
@@ -304,6 +326,10 @@ end
 
 function ClockOut()
     RetailJobs.DebugPrint('Attempting to clock out', 'debug')
+    
+    -- Show immediate feedback
+    ShowNotification('Clocking out...', 'info', 2000)
+    
     TriggerServerEvent('retail:clockOut')
 end
 
