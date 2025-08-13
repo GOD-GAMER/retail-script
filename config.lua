@@ -2,11 +2,11 @@ Config = {}
 
 -- Debug Settings (Enable for troubleshooting)
 Config.Debug = true -- Set to true to see debug messages
-Config.LogLevel = 'info' -- 'debug', 'info', 'warn', 'error'
+Config.LogLevel = 'debug' -- 'debug', 'info', 'warn', 'error'
 
 -- Framework Settings
-Config.Framework = 'standalone' -- 'esx', 'qbcore', 'standalone'
-Config.UseDatabase = false -- Set to true if using MySQL
+Config.Framework = 'esx' -- 'esx', 'qbcore', 'standalone'
+Config.UseDatabase = true -- Set to false if not using MySQL
 Config.Currency = 'cash' -- 'cash', 'bank', 'money'
 
 -- Job Settings

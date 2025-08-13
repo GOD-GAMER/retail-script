@@ -1,109 +1,101 @@
-# ?? FiveM Retail Jobs Script v0.0.3
+# ?? FiveM Retail Jobs Script v0.0.4
 
 ## ?? Release Summary
 
-This major update introduces **FiveM Native Keybind Integration** and resolves all interaction conflicts from v0.0.2. Players can now customize keybinds directly in FiveM's settings menu, just like ESX and QBCore resources.
+This critical update fixes the major interaction issues from v0.0.3, including flickering interaction points and clock in/out access problems. The release also includes a cleaned-up codebase optimized for server deployment.
 
-## ? What's New in v0.0.3
+## ?? **Critical Fixes in v0.0.4**
 
-### ?? **FiveM Native Keybind Integration**
-- **Settings Menu Integration**: Keybinds appear in FiveM Settings > Key Bindings > FiveM
-- **Professional System**: Uses same system as ESX, QBCore, and other major frameworks
-- **Real-time Customization**: Players can change keybinds instantly without resource restart
-- **Controller Support**: Can bind to gamepad buttons through FiveM settings
-- **Conflict Prevention**: FiveM automatically prevents duplicate key assignments
+### **?? No More Flickering**
+- **Anti-Flicker System**: Complete rewrite of interaction detection
+- **Stable Rendering**: Interaction checks now run at optimized 100ms intervals
+- **Single Active Interaction**: Only one interaction displays at a time
+- **Smooth Experience**: No more annoying text jumping or flickering
 
-### ?? **Fixed Interaction Issues**
-- **Clock Out Problems**: Resolved conflicts between clock out and work stations
-- **Separate Interaction Zones**: Dedicated areas for clock in/out vs work stations
-- **Priority System**: Smart interaction detection prevents overlapping prompts
-- **Distance Management**: Different interaction ranges for different functions
+### **? Clock In/Out Fixed**
+- **Reliable Access**: Clock in/out now works consistently at all stores
+- **Dedicated Zones**: Separate clock in/out areas prevent conflicts
+- **Priority System**: Clock in/out always takes precedence over work stations
+- **Visual Feedback**: Clear color-coded prompts (Green for clock in, Red for clock out)
 
-### ?? **Enhanced New Player Experience**
-- **Starting Bonus**: 100 XP welcome package for new players
-- **Tutorial Tasks**: Guided progression with XP rewards
-- **First-Time Bonuses**: Extra XP for initial job actions
-- **Progressive Learning**: Balanced experience curve for beginners
+### **?? Interaction Improvements**
+- **Distance Optimization**: Different interaction ranges for different functions
+- **Conflict Resolution**: Eliminated overlapping interaction zones
+- **Better Performance**: Reduced CPU usage and smoother gameplay
+- **Enhanced Debugging**: Improved logging for troubleshooting
 
-### ?? **Core Features** (Carried from v0.0.2)
-- **Corporate Ladder System**: 10 ranks from Trainee to CEO with unique perks
-- **Advanced NPC Customers**: Intelligent AI with personality types and realistic behaviors  
-- **Multi-Framework Support**: Compatible with ESX, QBCore, and Standalone
-- **Modern UI Interface**: React-style dashboard with real-time analytics
-- **Performance Optimization**: LOD system and entity management for optimal server performance
+### **?? Clean Release Package**
+- **Server-Ready**: Only essential files included for deployment
+- **Reduced Size**: Removed development files and documentation
+- **Streamlined Structure**: Optimized folder organization
+- **Easy Installation**: Drop-in replacement for previous versions
 
-### ?? **Job Types**
+## ?? **Core Features** (Maintained from v0.0.3)
+
+### **?? FiveM Native Keybind Integration**
+- Keybinds appear in FiveM Settings > Key Bindings > FiveM
+- Same professional system as ESX and QBCore
+- Real-time customization without resource restart
+- Controller support through FiveM settings
+
+### **?? Corporate Ladder System**
+- 10 ranks from Trainee to CEO with unique perks
+- Experience-based progression with salary increases
+- Management capabilities unlock with higher ranks
+
+### **?? Advanced NPC Customer System**
+- Intelligent AI customers with personality types
+- Dynamic shopping behaviors and patience systems
+- Realistic complaint and satisfaction mechanics
+
+### **?? Job Types**
 - **Retail Stores**: General merchandise with customizable products
 - **Fast Food Restaurants**: Kitchen operations and customer service
 
-### ?? **Included Locations**
+### **?? Included Locations**
 - Downtown General Store (Retail)
 - Sandy Shores Market (Retail)  
 - Burger Shot Downtown (Fast Food)
 - Cluckin Bell Paleto (Fast Food)
 
-## ?? **New Keybind System**
-
-### **FiveM Settings Integration**
-Your keybinds now appear alongside ESX and other professional resources:
-
-1. Press `ESC` ? `Settings` ? `Key Bindings` ? `FiveM`
-2. Find "Retail Jobs" entries:
-   - **Retail Jobs: Interact** (Default: E)
-   - **Retail Jobs: Open Job Menu** (Default: F6)
-   - **Retail Jobs: Quick Serve Customer** (Default: G)
-3. Click and customize to your preference
-4. Changes work immediately!
-
-### **Helper Commands**
-- `/retailhelp` - Show keybind information and help
-- `/retailkeybinds` - Display current keybind assignments
-
 ## ?? **Installation**
 
-1. **Download**: Download the latest release from [GitHub Releases](https://github.com/GOD-GAMER/retail-script/releases/tag/v0.0.3)
+1. **Download**: Download the latest release from [GitHub Releases](https://github.com/GOD-GAMER/retail-script/releases/tag/v0.0.4)
 2. **Extract**: Extract to your `resources/retail_jobs/` folder
-3. **Configure**: Edit `config.lua` to match your server setup
+3. **Configure**: Edit `config.lua` to match your server setup (ESX, QBCore, or Standalone)
 4. **Database**: Optionally import `database.sql` for persistent storage
 5. **Start**: Add `ensure retail_jobs` to your `server.cfg`
 
-## ?? **Upgrade from v0.0.2**
+## ?? **Upgrade from Previous Versions**
 
-### **Automatic Migration**
-- No manual configuration needed
-- Keybind system automatically updates to FiveM native
-- Player data and store configurations preserved
-- Default keybinds (E, F6, G) set automatically
+### **Drop-in Replacement**
+- Simply replace your existing files with v0.0.4
+- No configuration changes needed
+- Player data automatically preserved
+- Immediate performance improvements
 
-### **Player Benefits**
-- Familiar keybind customization (same as ESX)
-- No more interaction conflicts
-- Better new player experience
-- Professional integration
+### **What You'll Notice**
+- **Instant Fix**: No more flickering interaction text
+- **Reliable Clock In/Out**: Always works on first try
+- **Smoother Performance**: Better FPS and responsiveness
+- **Cleaner Interface**: More stable and professional feel
 
-## ?? **Configuration Options**
+## ?? **Configuration**
 
 ```lua
--- Framework Selection
-Config.Framework = 'standalone' -- 'esx', 'qbcore', 'standalone'
+-- Framework Selection (configure for your server)
+Config.Framework = 'esx' -- 'esx', 'qbcore', 'standalone'
+Config.UseDatabase = true -- Set true for MySQL storage
+Config.Debug = false -- Set true for troubleshooting
 
--- Database Integration  
-Config.UseDatabase = false -- Set true for MySQL storage
-
--- New Player Experience
-Config.NewPlayerBonus = {
-    enabled = true,
-    startingExperience = 100,
-    welcomeMessage = "Welcome to your first retail job!"
-}
-
--- Interaction System
+-- Interaction System (optimized distances)
 Config.Interactions = {
     distances = {
         clockInOut = 3.0,      -- Clock in/out distance
-        workStation = 2.5,     -- Work station distance
+        workStation = 2.5,     -- Work station distance  
         customer = 4.0,        -- Customer interaction distance
-    }
+    },
+    cooldown = 1000           -- Interaction cooldown (prevents spam)
 }
 ```
 
@@ -111,41 +103,42 @@ Config.Interactions = {
 
 ### **Getting Started**
 1. Find a retail store or fast food restaurant (marked on map)
-2. Walk to the **clock in area** (separate from work stations)
-3. Press your **Interact key** to clock in
+2. Walk to the **green clock in prompt** (separate from work stations)
+3. Press your **Interact key** (customizable in FiveM settings)
 4. Use work stations to serve customers and earn money
-5. Complete training modules to advance your career
-6. Climb the corporate ladder from Trainee to CEO
+5. Walk to the **red clock out prompt** when finished
 
-### **Interaction Guide**
-- **Clock In/Out**: Dedicated areas separate from work stations
-- **Work Stations**: Cashier, kitchen, inventory, office (each with own zone)
-- **Customer Service**: Quick serve with nearby customer detection
-- **Priority System**: Most important interaction always shows first
+### **Fixed Interaction Guide**
+- **?? Clock In**: Green text, highest priority, separate zone
+- **?? Clock Out**: Red text, highest priority, same zone as clock in
+- **?? Work Stations**: Blue text, work areas (cashier, kitchen, inventory)
+- **?? Customer Service**: Yellow text, quick serve nearby customers
 
-### **Experience Sources**
-- **First Clock In**: +50 XP bonus
-- **Serving Customers**: 10 XP per customer
-- **Restocking Items**: 5 XP per restock
-- **Tutorial Tasks**: Up to 100 XP bonus
-- **Perfect Service**: 20 XP every 10 customers
+### **Keybind Customization**
+- Open FiveM Settings (ESC menu)
+- Go to Key Bindings > FiveM
+- Find "Retail Jobs" entries
+- Customize to your preference
+- Changes apply immediately
 
 ## ?? **Performance & Compatibility**
 
-- ? **Optimized for 30+ concurrent players**
-- ? **ESX Framework Compatible**
-- ? **QBCore Framework Compatible**  
-- ? **Standalone Mode Available**
-- ? **MySQL Database Support (Optional)**
-- ? **FiveM Native Keybind Integration**
-- ? **Controller Support**
+- ? **Fixed Flickering Issues** - Stable interaction system
+- ? **Reliable Clock In/Out** - Works every time
+- ? **Optimized Performance** - Better FPS and responsiveness
+- ? **ESX Framework Compatible** - Enhanced integration
+- ? **QBCore Framework Compatible** - Full support
+- ? **Standalone Mode Available** - No framework required
+- ? **MySQL Database Support** - Optional persistent storage
+- ? **FiveM Native Keybinds** - Professional customization
 
-## ?? **Fixed Issues from v0.0.2**
+## ?? **Issues Fixed from v0.0.3**
 
-- ? **"Unable to clock out"** ? ? **Separate clock in/out zones**
-- ? **"Interactions too close together"** ? ? **Priority system with distinct areas**
-- ? **"Can't change keybinds easily"** ? ? **FiveM settings integration**
-- ? **"New players struggle with XP"** ? ? **Starting bonus and tutorial system**
+- ? **"Interaction points flicker"** ? ? **Anti-flicker system implemented**
+- ? **"Unable to access clock in/out"** ? ? **Dedicated zones with priority system**
+- ? **"Interactions too close together"** ? ? **Optimized distances and conflicts resolved**
+- ? **"Poor performance"** ? ? **Optimized rendering loops and memory usage**
+- ? **"Package too large"** ? ? **Cleaned release with only essential files**
 
 ## ??? **Admin Tools**
 
@@ -157,8 +150,8 @@ promoteplayer [playerid] [rank] - Promote player to specific rank
 
 ### **Debug Features**
 - Set `Config.Debug = true` for detailed logging
-- Performance monitoring for interaction system
-- Startup verification with file checking
+- Enhanced error reporting and interaction tracking
+- Performance monitoring built-in
 
 ## ?? **Documentation**
 
@@ -166,7 +159,6 @@ promoteplayer [playerid] [rank] - Promote player to specific rank
 - [Configuration Reference](https://github.com/GOD-GAMER/retail-script#configuration)  
 - [API Documentation](https://github.com/GOD-GAMER/retail-script#api-reference)
 - [Troubleshooting Guide](https://github.com/GOD-GAMER/retail-script/blob/main/TROUBLESHOOTING.md)
-- [FiveM Keybind Integration Guide](https://github.com/GOD-GAMER/retail-script/blob/main/FIVEM_KEYBIND_INTEGRATION.md)
 
 ## ?? **Contributing**
 
@@ -174,7 +166,6 @@ We welcome contributions! See our [Contributing Guide](https://github.com/GOD-GA
 
 ## ?? **Support**
 
-- ?? [Documentation](https://github.com/GOD-GAMER/retail-script/wiki)
 - ?? [Report Issues](https://github.com/GOD-GAMER/retail-script/issues)
 - ?? [Feature Requests](https://github.com/GOD-GAMER/retail-script/issues/new?template=feature_request.md)
 
@@ -183,7 +174,6 @@ We welcome contributions! See our [Contributing Guide](https://github.com/GOD-GA
 ### Planned for Future Releases
 - Advanced inventory management system
 - Multi-language support  
-- Mobile app integration
 - Enhanced analytics dashboard
 - Franchise management system
 
@@ -191,4 +181,4 @@ We welcome contributions! See our [Contributing Guide](https://github.com/GOD-GA
 
 **Full Changelog**: https://github.com/GOD-GAMER/retail-script/blob/main/CHANGELOG.md
 
-**Download**: [retail_jobs-v0.0.3.zip](https://github.com/GOD-GAMER/retail-script/releases/download/v0.0.3/retail_jobs-v0.0.3.zip)
+**Download**: [retail_jobs-v0.0.4.zip](https://github.com/GOD-GAMER/retail-script/releases/download/v0.0.4/retail_jobs-v0.0.4.zip)

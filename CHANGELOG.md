@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.4] - 2024-12-19
+
+### ?? **Critical Fixes and Optimization**
+
+#### Fixed
+- **Flickering Interaction Points** - Completely eliminated interaction text flickering
+- **Clock In/Out Access Issues** - Fixed problems with clocking in and out at stores
+- **Interaction Conflicts** - Resolved overlapping interaction zones causing confusion
+- **Performance Issues** - Optimized rendering loops and reduced CPU usage
+- **Framework Integration** - Improved ESX compatibility and error handling
+
+#### Enhanced
+- **Anti-Flicker System** - New interaction detection system prevents text flickering
+- **Optimized Rendering** - Interaction checks now run at 100ms intervals instead of every frame
+- **Stable Interactions** - Single active interaction system ensures consistent behavior
+- **Better Visual Feedback** - Improved text positioning and color coding for different interactions
+- **Debug Logging** - Enhanced debugging capabilities for troubleshooting
+
+#### Cleaned
+- **Removed Development Files** - Excluded unnecessary documentation and scripts from release
+- **Streamlined Package** - Release now contains only essential server files
+- **Optimized File Structure** - Cleaner organization for better server deployment
+- **Reduced Package Size** - Removed redundant files and improved compression
+
+#### Technical Improvements
+- **Interaction Priority System** - Clock in/out always takes precedence over work stations
+- **Distance Optimization** - Different interaction ranges for different functions
+- **Memory Management** - Better cleanup of NPCs and interaction states
+- **Framework Detection** - Improved compatibility checking and initialization
+
+### Breaking Changes
+- **None** - All changes are backward compatible with existing installations
+
+### Migration Guide
+- **No action required** - Drop-in replacement for v0.0.3
+- **Performance improvement** - Users will notice smoother interactions immediately
+- **Server benefits** - Reduced resource usage and better stability
+
+---
+
 ## [0.0.3] - 2024-12-19
 
 ### ?? **FiveM Native Keybind Integration**

@@ -214,11 +214,11 @@ Config.Ranks = {
 5. **Climb the Ladder**: Gain experience to unlock promotions
 
 #### Controls
-- **INTERACT** - Interact with customers/work stations (Default: E, customizable in FiveM settings)
-- **JOB MENU** - Open job menu (Default: F6, customizable in FiveM settings)  
-- **QUICK SERVE** - Quick serve nearest customer (Default: G, customizable in FiveM settings)
+- **INTERACT** - Interact with customers/work stations (Customizable in FiveM Settings > Key Bindings > FiveM)
+- **JOB MENU** - Open job menu (Customizable in FiveM Settings > Key Bindings > FiveM)  
+- **QUICK SERVE** - Quick serve nearest customer (Customizable in FiveM Settings > Key Bindings > FiveM)
 
-> **Note:** All keybinds can be customized in **FiveM Settings > Key Bindings > FiveM**. Look for "Retail Jobs" entries.
+> **?? Keybind Customization:** All keybinds can be changed in **FiveM Settings > Key Bindings > FiveM**. Look for "Retail Jobs" entries. No more conflicts or flickering!
 
 #### Work Stations
 - **Cashier**: Process customer transactions
@@ -378,15 +378,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Version**: 0.0.3  
+**Version**: 0.0.4  
 **Repository**: https://github.com/GOD-GAMER/retail-script  
 **Compatibility**: FiveM, ESX, QBCore  
 **Requirements**: None (MySQL optional)  
 **Performance**: Optimized for 30+ concurrent players
 
-## ?? **New in v0.0.3: FiveM Native Keybind Integration**
+## ?? **New in v0.0.4: Fixed Interaction System**
 
-- ? **Professional Keybind System** - Keybinds appear in FiveM Settings > Key Bindings > FiveM
-- ? **Fixed Interaction Conflicts** - Separate zones for clock in/out and work stations
-- ? **Enhanced New Player Experience** - Starting bonuses and tutorial system
-- ? **Real-time Customization** - Change keybinds instantly like ESX resources
+- ? **No More Flickering** - Stable interaction points that don't flicker
+- ? **Clock In/Out Fixed** - Reliable clocking in and out at dedicated zones
+- ? **Clean Codebase** - Removed unnecessary files and optimized for servers
+- ? **Better Performance** - Improved rendering and reduced resource usage
+- ? **ESX Integration** - Enhanced compatibility with ESX framework

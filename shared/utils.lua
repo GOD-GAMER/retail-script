@@ -10,8 +10,12 @@ function RetailJobs.Debug(message)
 end
 
 function RetailJobs.GetDistance(pos1, pos2)
-    if type(pos1) == 'table' then pos1 = vector3(pos1.x, pos1.y, pos1.z) end
-    if type(pos2) == 'table' then pos2 = vector3(pos2.x, pos2.y, pos2.z) end
+    if type(pos1) == "table" then
+        pos1 = vector3(pos1.x or pos1[1], pos1.y or pos1[2], pos1.z or pos1[3])
+    end
+    if type(pos2) == "table" then
+        pos2 = vector3(pos2.x or pos2[1], pos2.y or pos2[2], pos2.z or pos2[3])
+    end
     return #(pos1 - pos2)
 end
 
@@ -30,61 +34,65 @@ end
 
 function RetailJobs.GetPlayerRank(experience)
     local rank = 1
+    
     for i = #Config.Ranks, 1, -1 do
         if experience >= Config.Ranks[i].required_exp then
             rank = i
             break
         end
     end
+    
     return rank
 end
 
+-- Check if player can perform an action based on rank and perks
 function RetailJobs.CanPlayerPerformAction(playerData, action)
     if not playerData or not playerData.rank then return false end
     
     local rank = playerData.rank
-    local perks = Config.Ranks[rank] and Config.Ranks[rank].perks or {}
+    local rankData = Config.Ranks[rank]
     
-    local requiredPerks = {
-        manage_inventory = {'manage_inventory'},
-        hire_fire = {'hire_fire'},
-        set_prices = {'set_prices'},
-        full_management = {'full_management'},
-        owner_privileges = {'owner_privileges'},
-        multi_store_access = {'multi_store_access'},
-        executive_perks = {'executive_perks'},
-        unlimited_perks = {'unlimited_perks'}
+    if not rankData then return false end
+    
+    -- Define action requirements
+    local actionRequirements = {
+        serve_customers = 1,      -- Everyone can serve customers
+        manage_inventory = 4,     -- Team Leader and above
+        hire_fire = 5,           -- Supervisor and above
+        set_prices = 5,          -- Supervisor and above
+        full_management = 6,     -- Assistant Manager and above
+        owner_privileges = 7,    -- Store Manager and above
+        multi_store_access = 8,  -- District Manager and above
+        executive_perks = 9,     -- Regional Manager and above
+        unlimited_perks = 10     -- CEO only
     }
     
-    if requiredPerks[action] then
-        for _, perk in ipairs(requiredPerks[action]) do
-            for _, playerPerk in ipairs(perks) do
-                if playerPerk == perk or playerPerk == 'unlimited_perks' then
-                    return true
-                end
-            end
-        end
-        return false
-    end
+    local requiredRank = actionRequirements[action]
+    if not requiredRank then return false end
     
-    return true
+    return rank >= requiredRank
 end
 
 -- Store Management
 function RetailJobs.GetNearestStore(coords)
-    local nearestStore = nil
-    local nearestDistance = math.huge
+    local closestStore = nil
+    local closestDistance = math.huge
+    local closestIndex = nil
     
     for i, store in ipairs(Config.Stores) do
         local distance = RetailJobs.GetDistance(coords, store.coords)
-        if distance < nearestDistance then
-            nearestDistance = distance
-            nearestStore = store
-            nearestStore.id = i
+        if distance < closestDistance then
+            closestDistance = distance
+            closestStore = store
+            closestIndex = i
         end
     end
     
-    return nearestStore, nearestDistance
+    if closestStore then
+        closestStore.id = closestIndex
+    end
+    
+    return closestStore, closestDistance
 end
 
 function RetailJobs.IsPlayerAtWork(playerId)
@@ -102,15 +110,15 @@ function RetailJobs.AddMoney(playerId, amount, reason)
     if Config.Framework == 'esx' then
         local xPlayer = ESX.GetPlayerFromId(playerId)
         if xPlayer then
-            xPlayer.addMoney(amount)
+            xPlayer.addAccountMoney(Config.Currency, amount)
         end
     elseif Config.Framework == 'qbcore' then
         local Player = QBCore.Functions.GetPlayer(playerId)
         if Player then
-            Player.Functions.AddMoney('cash', amount)
+            Player.Functions.AddMoney(Config.Currency, amount, reason)
         end
     else
-        -- Standalone implementation
+        -- Standalone - trigger client event to handle money
         TriggerClientEvent('retail:addMoney', playerId, amount, reason)
     end
 end
@@ -132,4 +140,22 @@ function RetailJobs.RemoveMoney(playerId, amount)
         return true
     end
     return false
+end
+
+-- Format money for display
+function RetailJobs.FormatMoney(amount)
+    return '$' .. string.format('%d', amount)
+end
+
+-- Debug logging function
+function RetailJobs.DebugPrint(message, level)
+    if not Config.Debug then return end
+    
+    level = level or 'info'
+    if Config.LogLevel == 'debug' or 
+       (Config.LogLevel == 'info' and level ~= 'debug') or
+       (Config.LogLevel == 'warn' and (level == 'warn' or level == 'error')) or
+       (Config.LogLevel == 'error' and level == 'error') then
+        print('^3[RETAIL JOBS]^0 [' .. string.upper(level) .. '] ' .. message)
+    end
 end

@@ -123,3 +123,15 @@ docs/_build/
 # Local development
 local/
 localhost/
+
+# Development and internal documentation (not for release)
+GITHUB_SETUP_GUIDE.md
+NEW_FEATURES_v0.0.3.md
+IMPLEMENTATION_COMPLETE.md
+FIVEM_KEYBIND_INTEGRATION.md
+RELEASE_v0.0.3_READY.md
+push_to_github.bat
+create_release_package.bat
+
+# Release folders
+retail_jobs/
