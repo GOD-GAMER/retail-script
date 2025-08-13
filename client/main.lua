@@ -158,9 +158,9 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
         }
         
         if not onDuty then
-            interaction.text = '~g~[INTERACT]~w~ Clock In - ' .. store.name
+            interaction.text = '~g~[E]~w~ Clock In - ' .. store.name
         elseif onDuty and currentStoreId == store.id then
-            interaction.text = '~r~[INTERACT]~w~ Clock Out'
+            interaction.text = '~r~[E]~w~ Clock Out'
         end
         
         return interaction
@@ -185,7 +185,7 @@ function CheckWorkStationInteractions(store, playerCoords, currentTime)
                 priority = Config.Interactions.priorities.workStation,
                 coords = coords,
                 height = 0.8,
-                text = '~b~[INTERACT]~w~ ' .. GetWorkStationText(stationType),
+                text = '~b~[E]~w~ ' .. GetWorkStationText(stationType),
                 action = function()
                     if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
                     lastInteractionTime = currentTime
@@ -210,7 +210,7 @@ function CheckCustomerInteractions(playerCoords, currentTime)
             priority = Config.Interactions.priorities.customer,
             coords = playerCoords,
             height = 0.5,
-            text = '~y~[QUICK SERVE]~w~ Serve Customer (' .. #nearbyCustomers .. ' nearby)',
+            text = '~y~[G]~w~ Serve Customer (' .. #nearbyCustomers .. ' nearby)',
             action = function()
                 if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
                 lastInteractionTime = currentTime
@@ -222,12 +222,31 @@ function CheckCustomerInteractions(playerCoords, currentTime)
     return nil
 end
 
--- Event handlers for FiveM native keybinds
+-- Event handlers for keybind events
 RegisterNetEvent('retail:localInteract')
 AddEventHandler('retail:localInteract', function()
-    if activeInteraction and activeInteraction.action and (GetGameTimer() - lastInteractionTime > Config.Interactions.cooldown) then
-        lastInteractionTime = GetGameTimer()
-        activeInteraction.action()
+    if Config.Debug then
+        print('[RETAIL] Interact key pressed')
+    end
+    
+    if activeInteraction and activeInteraction.action then
+        if Config.Debug then
+            print('[RETAIL] Executing interaction: ' .. activeInteraction.type)
+        end
+        
+        local currentTime = GetGameTimer()
+        if currentTime - lastInteractionTime > Config.Interactions.cooldown then
+            lastInteractionTime = currentTime
+            activeInteraction.action()
+        else
+            if Config.Debug then
+                print('[RETAIL] Interaction on cooldown')
+            end
+        end
+    else
+        if Config.Debug then
+            print('[RETAIL] No active interaction found')
+        end
     end
 end)
 
@@ -510,9 +529,22 @@ end
 
 -- Utility Functions
 function ShowNotification(message, type, duration)
-    -- Framework-specific notifications
+    if Config.Debug then
+        print('[RETAIL] Notification: ' .. message .. ' (Type: ' .. (type or 'info') .. ')')
+    end
+    
+    -- ESX Notification (Primary method for ESX servers)
     if Config.Framework == 'esx' and ESX then
-        ESX.ShowNotification(message)
+        if type == 'error' then
+            ESX.ShowNotification('~r~' .. message)
+        elseif type == 'success' then
+            ESX.ShowNotification('~g~' .. message)
+        elseif type == 'warning' then
+            ESX.ShowNotification('~y~' .. message)
+        else
+            ESX.ShowNotification(message)
+        end
+    -- QBCore Notification
     elseif Config.Framework == 'qbcore' and QBCore then
         QBCore.Functions.Notify(message, type or 'primary', duration or 5000)
     else
@@ -520,6 +552,12 @@ function ShowNotification(message, type, duration)
         SetNotificationTextEntry("STRING")
         AddTextComponentString(message)
         DrawNotification(0, 1)
+        
+        -- Also show in chat as backup
+        TriggerEvent('chat:addMessage', {
+            color = {255, 255, 255},
+            args = {"Retail Jobs", message}
+        })
     end
 end
 
@@ -646,3 +684,63 @@ AddEventHandler('retail:newPlayerWelcome', function()
         ShowNotification('You\'ve received ' .. Config.NewPlayerBonus.startingExperience .. ' starting experience!', 'success', 8000)
     end
 end)
+
+-- Debug command for troubleshooting
+RegisterCommand('retaildebug', function()
+    local playerCoords = GetEntityCoords(PlayerPedId())
+    local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
+    
+    local debugInfo = string.format([[:
+^3=== RETAIL JOBS DEBUG INFO ===^0
+^2Player Position:^0 %.2f, %.2f, %.2f
+^2Nearest Store:^0 %s
+^2Distance to Store:^0 %.2f
+^2On Duty:^0 %s
+^2Current Store ID:^0 %s
+^2Active Interaction:^0 %s
+^2Framework:^0 %s
+^2ESX Available:^0 %s
+    ]], 
+    playerCoords.x, playerCoords.y, playerCoords.z,
+    closestStore and closestStore.name or "None",
+    distance or 0,
+    onDuty and "Yes" or "No",
+    currentStoreId or "None", 
+    activeInteraction and activeInteraction.type or "None",
+    Config.Framework,
+    ESX and "Yes" or "No"
+    )
+    
+    TriggerEvent('chat:addMessage', {
+        color = {255, 255, 255},
+        multiline = true,
+        args = {"Retail Debug", debugInfo}
+    })
+    
+    -- Also check if player is near any store
+    if closestStore and distance < 10.0 then
+        local clockCoords = closestStore.clockInOut or closestStore.coords
+        local clockDistance = RetailJobs.GetDistance(playerCoords, clockCoords)
+        
+        local storeDebug = string.format([[:
+^3=== STORE DEBUG INFO ===^0
+^2Store Coords:^0 %.2f, %.2f, %.2f
+^2Clock Coords:^0 %.2f, %.2f, %.2f
+^2Distance to Clock:^0 %.2f
+^2Required Distance:^0 %.2f
+^2Can Clock In:^0 %s
+        ]],
+        closestStore.coords.x, closestStore.coords.y, closestStore.coords.z,
+        clockCoords.x, clockCoords.y, clockCoords.z,
+        clockDistance,
+        Config.Interactions.distances.clockInOut,
+        clockDistance < Config.Interactions.distances.clockInOut and "Yes" or "No"
+        )
+        
+        TriggerEvent('chat:addMessage', {
+            color = {255, 255, 255},
+            multiline = true,
+            args = {"Store Debug", storeDebug}
+        })
+    end
+end, false)

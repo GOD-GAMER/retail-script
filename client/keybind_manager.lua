@@ -173,93 +173,75 @@ RegisterCommand('keybinds', function()
     ShowNotification('Quick Serve: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('quick_serve')), 'info', 5000)
 end)
 
--- FiveM Native Keybind System Integration
--- This integrates with FiveM's settings menu for keybind management
+-- ESX-Compatible Keybind Manager for Retail Jobs
+-- This system avoids conflicts with other ESX job resources
 
--- Commands that get triggered by the keybinds
-RegisterCommand('retail_interact', function()
-    if not onDuty then return end
-    TriggerEvent('retail:localInteract')
-end, false)
+local isKeyPressed = false
+local keyPressTimer = 0
 
-RegisterCommand('retail_menu', function()
-    if not onDuty then return end
-    TriggerEvent('retail:localOpenMenu')
-end, false)
-
-RegisterCommand('retail_quickserve', function()
-    if not onDuty then return end
-    TriggerEvent('retail:localQuickServe')
-end, false)
-
--- Utility function to check if a keybind is currently pressed
-function IsRetailKeyPressed(keyName)
-    if keyName == 'interact' then
-        return IsControlJustPressed(0, 38) or IsDisabledControlJustPressed(0, 38)
-    elseif keyName == 'menu' then
-        return IsControlJustPressed(0, 167) or IsDisabledControlJustPressed(0, 167)
-    elseif keyName == 'quickserve' then
-        return IsControlJustPressed(0, 47) or IsDisabledControlJustPressed(0, 47)
-    end
-    return false
-end
-
--- Get the current keybind for display purposes
-function GetRetailKeybindLabel(action)
-    -- Since FiveM manages the keybinds, we'll use default labels
-    -- Players can change these in FiveM Settings > Key Bindings
-    local defaultLabels = {
-        interact = 'E',
-        menu = 'F6',
-        quickserve = 'G'
-    }
-    
-    return defaultLabels[action] or 'UNBOUND'
-end
-
--- Initialize notification for players about keybind customization
+-- Simple key detection without RegisterKeyMapping to avoid conflicts
 Citizen.CreateThread(function()
-    Citizen.Wait(5000) -- Wait 5 seconds after resource start
-    
-    if Config.Debug then
-        print('[RETAIL JOBS] Native FiveM keybinds registered:')
-        print('  - retail_interact (Default: E)')
-        print('  - retail_menu (Default: F6)') 
-        print('  - retail_quickserve (Default: G)')
-        print('Players can customize these in Settings > Key Bindings > FiveM')
+    while true do
+        Citizen.Wait(0)
+        
+        -- Check for E key press (interact)
+        if IsControlJustPressed(0, 38) then -- E key
+            if not isKeyPressed then
+                isKeyPressed = true
+                keyPressTimer = GetGameTimer()
+                TriggerEvent('retail:localInteract')
+            end
+        end
+        
+        -- Check for F6 key press (job menu)
+        if IsControlJustPressed(0, 167) then -- F6 key
+            TriggerEvent('retail:localOpenMenu')
+        end
+        
+        -- Check for G key press (quick serve)
+        if IsControlJustPressed(0, 47) then -- G key
+            TriggerEvent('retail:localQuickServe')
+        end
+        
+        -- Reset key press state after 1 second
+        if isKeyPressed and GetGameTimer() - keyPressTimer > 1000 then
+            isKeyPressed = false
+        end
     end
 end)
 
--- Helper function for showing keybind help
-function ShowKeybindHelp()
-    local message = "~b~Retail Jobs Keybinds:~w~\n"
-    message = message .. "~y~Interact:~w~ Check your FiveM keybind settings\n"
-    message = message .. "~y~Job Menu:~w~ Check your FiveM keybind settings\n"
-    message = message .. "~y~Quick Serve:~w~ Check your FiveM keybind settings\n"
-    message = message .. "~g~Customize in: Settings > Key Bindings > FiveM~w~"
-    
-    TriggerEvent('chat:addMessage', {
-        color = {0, 255, 255},
-        multiline = true,
-        args = {"Retail Jobs", message}
-    })
-end
-
--- Command to show keybind help
-RegisterCommand('retailkeybinds', function()
-    ShowKeybindHelp()
-end)
-
+-- Commands as backup method
 RegisterCommand('retailhelp', function()
-    ShowKeybindHelp()
+    local helpText = [[
+^3=== RETAIL JOBS CONTROLS ===^0
+^2E^0 - Interact with stores/stations
+^2F6^0 - Open job menu  
+^2G^0 - Quick serve customers
+
+^3=== COMMANDS ===^0
+^2/retailhelp^0 - Show this help
+^2/retailmenu^0 - Open job menu
+^2/retailinteract^0 - Manual interact
+    ]]
+    TriggerEvent('chat:addMessage', {
+        color = {255, 255, 255},
+        multiline = true,
+        args = {"Retail Jobs", helpText}
+    })
 end)
 
--- Export the helper functions for use in main client script
-_G.RetailKeybinds = {
-    IsPressed = IsRetailKeyPressed,
-    GetLabel = GetRetailKeybindLabel,
-    ShowHelp = ShowKeybindHelp
-}
+RegisterCommand('retailmenu', function()
+    TriggerEvent('retail:localOpenMenu')
+end)
+
+RegisterCommand('retailinteract', function()
+    TriggerEvent('retail:localInteract')
+end)
+
+-- Export the interaction function for other resources
+exports('triggerInteract', function()
+    TriggerEvent('retail:localInteract')
+end)
 
 -- Export functions
 _G.KeybindManager = KeybindManager

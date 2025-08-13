@@ -1,7 +1,7 @@
 Config = {}
 
 -- Debug Settings (Enable for troubleshooting)
-Config.Debug = true -- Set to true to see debug messages
+Config.Debug = true -- Set to true to see debug messages in console
 Config.LogLevel = 'debug' -- 'debug', 'info', 'warn', 'error'
 
 -- Framework Settings
@@ -58,8 +58,8 @@ Config.NewPlayerBonus = {
 -- Interaction System
 Config.Interactions = {
     distances = {
-        clockInOut = 3.0,      -- Distance for clocking in/out
-        workStation = 2.5,     -- Distance for work stations
+        clockInOut = 4.0,      -- Increased distance for clock in/out
+        workStation = 3.0,     -- Increased distance for work stations
         customer = 4.0,        -- Distance for customer interactions
         management = 2.0       -- Distance for management tasks
     },
@@ -69,7 +69,7 @@ Config.Interactions = {
         customer = 6,          -- Medium priority
         management = 4         -- Lower priority
     },
-    cooldown = 1000           -- 1 second cooldown between interactions
+    cooldown = 500            -- Reduced cooldown to 0.5 seconds
 }
 
 -- Store Locations with improved positioning
