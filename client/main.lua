@@ -174,11 +174,11 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
         }
         
         if not onDuty then
-            interaction.text = '~g~[E]~w~ Clock In - ' .. store.name
+            interaction.text = '~g~[Numpad 2]~w~ Clock In - ' .. store.name
         elseif onDuty and currentStoreId == store.id then
-            interaction.text = '~r~[E]~w~ Clock Out'
+            interaction.text = '~r~[Numpad 2]~w~ Clock Out'
         else
-            interaction.text = '~y~[E]~w~ Clock out of current job first'
+            interaction.text = '~y~[Numpad 2]~w~ Clock out of current job first'
         end
         
         return interaction
@@ -203,7 +203,7 @@ function CheckWorkStationInteractions(store, playerCoords, currentTime)
                 priority = Config.Interactions.priorities.workStation,
                 coords = coords,
                 height = 0.8,
-                text = '~b~[E]~w~ ' .. GetWorkStationText(stationType),
+                text = '~b~[Numpad 2]~w~ ' .. GetWorkStationText(stationType),
                 action = function()
                     if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
                     lastInteractionTime = currentTime

@@ -4,7 +4,7 @@ local KeybindManager = {}
 -- Initialize default keybinds
 function KeybindManager.Initialize()
     -- Register keybinds with FiveM's native system
-    RegisterKeyMapping('retail_interact', 'Retail Jobs: Interact', 'keyboard', 'E')
+    RegisterKeyMapping('retail_interact', 'Retail Jobs: Interact', 'keyboard', 'NUMPAD2')
     RegisterKeyMapping('retail_menu', 'Retail Jobs: Open Job Menu', 'keyboard', 'F6')
     RegisterKeyMapping('retail_quickserve', 'Retail Jobs: Quick Serve Customer', 'keyboard', 'G')
 
@@ -168,9 +168,9 @@ end)
 -- Command to show current keybinds
 RegisterCommand('keybinds', function()
     ShowNotification('~b~Current Keybinds:~w~', 'info', 2000)
-    ShowNotification('Interact: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('interact')), 'info', 5000)
-    ShowNotification('Menu: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('menu')), 'info', 5000)
-    ShowNotification('Quick Serve: ~y~' .. KeybindManager.GetKeybindLabel(KeybindManager.GetKeybind('quick_serve')), 'info', 5000)
+    ShowNotification('Interact: ~y~Numpad 2', 'info', 5000)
+    ShowNotification('Menu: ~y~F6', 'info', 5000)
+    ShowNotification('Quick Serve: ~y~G', 'info', 5000)
 end)
 
 -- ESX-Compatible Keybind Manager for Retail Jobs
@@ -184,8 +184,8 @@ Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         
-        -- Check for E key press (interact)
-        if IsControlJustPressed(0, 38) then -- E key
+        -- Check for Numpad 2 key press (interact) - Control ID 97
+        if IsControlJustPressed(0, 97) then -- Numpad 2 key
             if not isKeyPressed then
                 isKeyPressed = true
                 keyPressTimer = GetGameTimer()
@@ -214,7 +214,7 @@ end)
 RegisterCommand('retailhelp', function()
     local helpText = [[
 ^3=== RETAIL JOBS CONTROLS ===^0
-^2E^0 - Interact with stores/stations
+^2Numpad 2^0 - Interact with stores/stations
 ^2F6^0 - Open job menu  
 ^2G^0 - Quick serve customers
 
