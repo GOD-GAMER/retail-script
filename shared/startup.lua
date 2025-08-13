@@ -16,20 +16,29 @@ local requiredFiles = {
     'html/script.js'
 }
 
-for _, file in ipairs(requiredFiles) do
-    local resourceName = GetCurrentResourceName()
-    local filePath = GetResourcePath(resourceName) .. '/' .. file
-    
-    -- Note: We can't actually check file existence in FiveM runtime easily
-    -- This is more for documentation of required files
-    print("^3[RETAIL JOBS] ^0Required file: " .. file)
+-- Only do file path checking on server side where GetResourcePath is available
+if IsDuplicityVersion() then -- Server side only
+    for _, file in ipairs(requiredFiles) do
+        local resourceName = GetCurrentResourceName()
+        
+        -- Note: We can't actually check file existence in FiveM runtime easily
+        -- This is more for documentation of required files
+        print("^3[RETAIL JOBS] ^0Required file: " .. file)
+    end
+else
+    -- Client side - just list the files without path checking
+    for _, file in ipairs(requiredFiles) do
+        print("^3[RETAIL JOBS] ^0Required file: " .. file)
+    end
 end
 
 -- Test configuration loading
 if Config then
     print("^2[RETAIL JOBS] ^0Config loaded successfully")
     print("^3[RETAIL JOBS] ^0Framework: " .. (Config.Framework or "standalone"))
-    print("^3[RETAIL JOBS] ^0Store count: " .. #Config.Stores)
+    if Config.Stores then
+        print("^3[RETAIL JOBS] ^0Store count: " .. #Config.Stores)
+    end
 else
     print("^1[RETAIL JOBS] ^0ERROR: Config not loaded!")
 end
@@ -47,7 +56,8 @@ print("^2[RETAIL JOBS] ^0Resource verification complete!")
 exports('testResource', function()
     return {
         status = "working",
-        version = "1.0.0",
-        stores = Config and #Config.Stores or 0
+        version = "0.0.6",
+        stores = Config and Config.Stores and #Config.Stores or 0,
+        framework = Config and Config.Framework or "standalone"
     }
 end)
