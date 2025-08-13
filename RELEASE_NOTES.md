@@ -1,184 +1,103 @@
-# ?? FiveM Retail Jobs Script v0.0.4
+# ?? FiveM Retail Jobs Script v0.0.5
 
 ## ?? Release Summary
 
-This critical update fixes the major interaction issues from v0.0.3, including flickering interaction points and clock in/out access problems. The release also includes a cleaned-up codebase optimized for server deployment.
+This is a major feature update, introducing an **Advanced Inventory System**, a new **Management Dashboard**, and a **Supplier System**. This release adds significant depth to the gameplay, especially for higher-ranked players.
 
-## ?? **Critical Fixes in v0.0.4**
+## ? **What's New in v0.0.5**
 
-### **?? No More Flickering**
-- **Anti-Flicker System**: Complete rewrite of interaction detection
-- **Stable Rendering**: Interaction checks now run at optimized 100ms intervals
-- **Single Active Interaction**: Only one interaction displays at a time
-- **Smooth Experience**: No more annoying text jumping or flickering
+### **?? Advanced Inventory System**
+- **Individual Item Tracking**: Each item's stock is now tracked individually per store.
+- **Spoilage System**: Perishable goods will spoil if not sold in time, adding a new layer of challenge.
+- **Supplier Orders**: Managers can order stock from various suppliers with different prices and delivery times.
+- **Stock Alerts**: Automatic notifications when items are running low.
 
-### **? Clock In/Out Fixed**
-- **Reliable Access**: Clock in/out now works consistently at all stores
-- **Dedicated Zones**: Separate clock in/out areas prevent conflicts
-- **Priority System**: Clock in/out always takes precedence over work stations
-- **Visual Feedback**: Clear color-coded prompts (Green for clock in, Red for clock out)
+### **?? Management Dashboard**
+- **New UI**: A dedicated interface for managers to oversee store operations.
+- **Sales Analytics**: View graphs of daily/weekly sales, top-selling items, and revenue.
+- **Employee Performance**: Track employee hours, sales, and customer satisfaction.
+- **Live Inventory View**: See real-time stock levels for your store.
 
-### **?? Interaction Improvements**
-- **Distance Optimization**: Different interaction ranges for different functions
-- **Conflict Resolution**: Eliminated overlapping interaction zones
-- **Better Performance**: Reduced CPU usage and smoother gameplay
-- **Enhanced Debugging**: Improved logging for troubleshooting
+### **?? Supplier System**
+- **Multiple Suppliers**: Configure different suppliers with unique product offerings and pricing.
+- **Delivery System**: Orders are delivered by NPC trucks, adding immersion.
+- **Supplier Reputation**: Building a good relationship with suppliers can unlock discounts.
 
-### **?? Clean Release Package**
-- **Server-Ready**: Only essential files included for deployment
-- **Reduced Size**: Removed development files and documentation
-- **Streamlined Structure**: Optimized folder organization
-- **Easy Installation**: Drop-in replacement for previous versions
+### **?? Employee Scheduling**
+- **Weekly Schedules**: Managers can assign shifts to employees.
+- **Time-off Requests**: Employees can request time off through the job menu.
+- **Shift Bonuses**: Offer bonuses for working unpopular shifts.
 
-## ?? **Core Features** (Maintained from v0.0.3)
-
-### **?? FiveM Native Keybind Integration**
-- Keybinds appear in FiveM Settings > Key Bindings > FiveM
-- Same professional system as ESX and QBCore
-- Real-time customization without resource restart
-- Controller support through FiveM settings
-
-### **?? Corporate Ladder System**
-- 10 ranks from Trainee to CEO with unique perks
-- Experience-based progression with salary increases
-- Management capabilities unlock with higher ranks
-
-### **?? Advanced NPC Customer System**
-- Intelligent AI customers with personality types
-- Dynamic shopping behaviors and patience systems
-- Realistic complaint and satisfaction mechanics
-
-### **?? Job Types**
-- **Retail Stores**: General merchandise with customizable products
-- **Fast Food Restaurants**: Kitchen operations and customer service
-
-### **?? Included Locations**
-- Downtown General Store (Retail)
-- Sandy Shores Market (Retail)  
-- Burger Shot Downtown (Fast Food)
-- Cluckin Bell Paleto (Fast Food)
+### **?? Enhanced Gameplay**
+- **Dynamic Pricing**: Managers can adjust prices based on demand or to clear out old stock.
+- **Smarter Customers**: NPCs now have specific shopping lists and will leave if they can't find what they want.
+- **Granular Permissions**: More detailed control over what each management rank can do.
 
 ## ?? **Installation**
 
-1. **Download**: Download the latest release from [GitHub Releases](https://github.com/GOD-GAMER/retail-script/releases/tag/v0.0.4)
-2. **Extract**: Extract to your `resources/retail_jobs/` folder
-3. **Configure**: Edit `config.lua` to match your server setup (ESX, QBCore, or Standalone)
-4. **Database**: Optionally import `database.sql` for persistent storage
-5. **Start**: Add `ensure retail_jobs` to your `server.cfg`
+1. **Download**: Download the latest release from [GitHub Releases](https://github.com/GOD-GAMER/retail-script/releases/tag/v0.0.5)
+2. **Extract**: Extract to your `resources/retail_jobs/` folder.
+3. **Database**: **IMPORTANT** - The database schema has changed. You must run the new `database.sql`.
+4. **Configure**: Update `config.lua` with the new settings for inventory and suppliers.
+5. **Start**: Add `ensure retail_jobs` to your `server.cfg`.
 
-## ?? **Upgrade from Previous Versions**
+## ?? **Upgrade from v0.0.4**
 
-### **Drop-in Replacement**
-- Simply replace your existing files with v0.0.4
-- No configuration changes needed
-- Player data automatically preserved
-- Immediate performance improvements
+### **?? Breaking Changes**
+- **Database**: The database schema has been updated. You **must** run the new `database.sql` file. It's recommended to backup your old data first.
+- **Configuration**: `config.lua` has new sections for `Config.Inventory` and `Config.Suppliers`. You'll need to add these from the new config file.
 
-### **What You'll Notice**
-- **Instant Fix**: No more flickering interaction text
-- **Reliable Clock In/Out**: Always works on first try
-- **Smoother Performance**: Better FPS and responsiveness
-- **Cleaner Interface**: More stable and professional feel
+### **Migration Steps**
+1. **Backup your database** and `config.lua`.
+2. Replace all script files with the new v0.0.5 files.
+3. **Execute the new `database.sql`** in your MySQL database.
+4. **Copy the new sections** from the v0.0.5 `config.lua` into your existing config file.
+5. Restart your server.
 
-## ?? **Configuration**
+## ?? **New Configuration Options**
 
 ```lua
--- Framework Selection (configure for your server)
-Config.Framework = 'esx' -- 'esx', 'qbcore', 'standalone'
-Config.UseDatabase = true -- Set true for MySQL storage
-Config.Debug = false -- Set true for troubleshooting
+-- config.lua
 
--- Interaction System (optimized distances)
-Config.Interactions = {
-    distances = {
-        clockInOut = 3.0,      -- Clock in/out distance
-        workStation = 2.5,     -- Work station distance  
-        customer = 4.0,        -- Customer interaction distance
+-- Advanced Inventory Settings
+Config.Inventory = {
+    enableSpoilage = true,
+    spoilageTime = 48, -- in hours
+    lowStockThreshold = 10 -- percentage
+}
+
+-- Supplier System
+Config.Suppliers = {
+    {
+        name = 'Mega Wholesale',
+        products = {'water', 'sandwich', 'soda'},
+        deliveryTime = 30, -- in minutes
+        baseCostMultiplier = 0.8
     },
-    cooldown = 1000           -- Interaction cooldown (prevents spam)
+    {
+        name = 'Premium Goods Inc.',
+        products = {'energy_drink', 'cigarettes'},
+        deliveryTime = 60,
+        baseCostMultiplier = 0.9
+    }
 }
 ```
 
-## ?? **Player Experience**
+## ?? **New Player Experience**
 
-### **Getting Started**
-1. Find a retail store or fast food restaurant (marked on map)
-2. Walk to the **green clock in prompt** (separate from work stations)
-3. Press your **Interact key** (customizable in FiveM settings)
-4. Use work stations to serve customers and earn money
-5. Walk to the **red clock out prompt** when finished
+### **For Managers**
+- **Open Dashboard**: Use the office work station to open the new Management Dashboard.
+- **Order Stock**: Access the supplier menu to order new inventory.
+- **Set Schedules**: Use the dashboard to manage employee shifts.
+- **Adjust Prices**: Dynamically change item prices to react to the market.
 
-### **Fixed Interaction Guide**
-- **?? Clock In**: Green text, highest priority, separate zone
-- **?? Clock Out**: Red text, highest priority, same zone as clock in
-- **?? Work Stations**: Blue text, work areas (cashier, kitchen, inventory)
-- **?? Customer Service**: Yellow text, quick serve nearby customers
-
-### **Keybind Customization**
-- Open FiveM Settings (ESC menu)
-- Go to Key Bindings > FiveM
-- Find "Retail Jobs" entries
-- Customize to your preference
-- Changes apply immediately
-
-## ?? **Performance & Compatibility**
-
-- ? **Fixed Flickering Issues** - Stable interaction system
-- ? **Reliable Clock In/Out** - Works every time
-- ? **Optimized Performance** - Better FPS and responsiveness
-- ? **ESX Framework Compatible** - Enhanced integration
-- ? **QBCore Framework Compatible** - Full support
-- ? **Standalone Mode Available** - No framework required
-- ? **MySQL Database Support** - Optional persistent storage
-- ? **FiveM Native Keybinds** - Professional customization
-
-## ?? **Issues Fixed from v0.0.3**
-
-- ? **"Interaction points flicker"** ? ? **Anti-flicker system implemented**
-- ? **"Unable to access clock in/out"** ? ? **Dedicated zones with priority system**
-- ? **"Interactions too close together"** ? ? **Optimized distances and conflicts resolved**
-- ? **"Poor performance"** ? ? **Optimized rendering loops and memory usage**
-- ? **"Package too large"** ? ? **Cleaned release with only essential files**
-
-## ??? **Admin Tools**
-
-### **Server Commands** (Console Only)
-```
-addexp [playerid] [amount]     - Give experience to a player
-promoteplayer [playerid] [rank] - Promote player to specific rank
-```
-
-### **Debug Features**
-- Set `Config.Debug = true` for detailed logging
-- Enhanced error reporting and interaction tracking
-- Performance monitoring built-in
-
-## ?? **Documentation**
-
-- [Installation Guide](https://github.com/GOD-GAMER/retail-script#installation)
-- [Configuration Reference](https://github.com/GOD-GAMER/retail-script#configuration)  
-- [API Documentation](https://github.com/GOD-GAMER/retail-script#api-reference)
-- [Troubleshooting Guide](https://github.com/GOD-GAMER/retail-script/blob/main/TROUBLESHOOTING.md)
-
-## ?? **Contributing**
-
-We welcome contributions! See our [Contributing Guide](https://github.com/GOD-GAMER/retail-script/blob/main/CONTRIBUTING.md) for details.
-
-## ?? **Support**
-
-- ?? [Report Issues](https://github.com/GOD-GAMER/retail-script/issues)
-- ?? [Feature Requests](https://github.com/GOD-GAMER/retail-script/issues/new?template=feature_request.md)
-
-## ?? **What's Next**
-
-### Planned for Future Releases
-- Advanced inventory management system
-- Multi-language support  
-- Enhanced analytics dashboard
-- Franchise management system
+### **For Employees**
+- **Check Stock**: See real-time stock levels at the inventory station.
+- **View Schedule**: Check your upcoming shifts in the job menu.
+- **Request Time Off**: Submit time-off requests to your manager.
 
 ---
 
 **Full Changelog**: https://github.com/GOD-GAMER/retail-script/blob/main/CHANGELOG.md
 
-**Download**: [retail_jobs-v0.0.4.zip](https://github.com/GOD-GAMER/retail-script/releases/download/v0.0.4/retail_jobs-v0.0.4.zip)
+**Download**: [retail_jobs-v0.0.5.zip](https://github.com/GOD-GAMER/retail-script/releases/download/v0.0.5/retail_jobs-v0.0.5.zip)

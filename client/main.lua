@@ -225,7 +225,8 @@ end
 -- Event handlers for FiveM native keybinds
 RegisterNetEvent('retail:localInteract')
 AddEventHandler('retail:localInteract', function()
-    if activeInteraction and activeInteraction.action then
+    if activeInteraction and activeInteraction.action and (GetGameTimer() - lastInteractionTime > Config.Interactions.cooldown) then
+        lastInteractionTime = GetGameTimer()
         activeInteraction.action()
     end
 end)

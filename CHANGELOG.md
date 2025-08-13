@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2024-12-20
+
+### ?? **Feature Update: Advanced Inventory & Management**
+
+#### Added
+- **Advanced Inventory System** - Track individual item stock, spoilage, and supplier orders
+- **Management Dashboard** - New UI for managers to view store analytics and employee performance
+- **Supplier System** - Order stock from different suppliers with varying costs and delivery times
+- **Employee Scheduling** - Managers can set weekly schedules for employees
+- **Dynamic Pricing** - Prices can be adjusted by managers based on demand and stock levels
+
+#### Enhanced
+- **NPC Customer AI** - Customers now have specific shopping lists and react to out-of-stock items
+- **Management Tools** - More granular permissions for different management ranks
+- **UI/UX** - Cleaner and more intuitive interface for all menus
+- **Performance** - Optimized database queries and reduced server load
+- **Logging** - Added detailed logs for all management actions
+
+#### Fixed
+- **Clock-in interaction** - Resolved issue where clock-in prompt would not appear consistently
+- **Database saving** - Fixed a bug where player experience was not saving correctly in some cases
+- **Minor UI glitches** - Squashed several small visual bugs in the UI
+
+### Breaking Changes
+- **Database Schema** - `database.sql` has been updated to include new tables for inventory and suppliers. A full database reset or manual migration is required.
+- **Configuration** - `config.lua` has new sections for `Config.Inventory` and `Config.Suppliers`.
+
+### Migration Guide
+- **Backup your database** before applying changes.
+- **Run the new `database.sql`** to update your schema.
+- **Update your `config.lua`** with the new inventory and supplier settings.
+- **Restart the server** and verify all new features are working.
+
+---
+
 ## [0.0.4] - 2024-12-19
 
 ### ?? **Critical Fixes and Optimization**

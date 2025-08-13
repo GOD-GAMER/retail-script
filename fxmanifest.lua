@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'GOD-GAMER'
 description 'Advanced Retail and Fast Food Job System with Corporate Ladder'
-version '0.0.4'
+version '0.0.5'
 
 shared_scripts {
     'config.lua',
