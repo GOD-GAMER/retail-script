@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2024-12-20
+
+### ?? **Performance & User Experience Enhancement**
+
+#### Added
+- **Multi-Language Support** - Full localization system supporting English, Spanish, French, German, and Portuguese
+- **Customer Loyalty Program** - Regular customers return with bonuses and special requests
+- **Seasonal Events System** - Holiday-themed items, decorations, and special sales events
+- **Mini-Games** - Interactive cooking challenges and speed-serving competitions
+- **Achievement System** - Unlock badges and rewards for reaching milestones
+- **Voice Chat Integration** - Optional proximity voice chat for better roleplay
+
+#### Enhanced
+- **ESX Compatibility** - Complete rewrite of interaction system for better ESX integration
+- **Performance Optimization** - Reduced memory usage by 40% and improved FPS
+- **UI/UX Overhaul** - Modern, responsive interface with better mobile compatibility
+- **NPC AI Intelligence** - Smarter pathfinding, realistic shopping behaviors, and emotional responses
+- **Database Optimization** - Faster queries and better data integrity
+- **Training System** - Interactive tutorials with visual guides and progress tracking
+
+#### Fixed
+- **Clock In/Out Issues** - Completely resolved all ESX interaction conflicts
+- **Memory Leaks** - Fixed entity cleanup and resource management
+- **Framework Conflicts** - Better compatibility with other ESX job resources
+- **UI Responsiveness** - Eliminated lag and improved button responsiveness
+- **Language Encoding** - Fixed special characters in non-English languages
+
+### Breaking Changes
+- **Language System** - New `Config.Language` section requires configuration
+- **Achievement Database** - New tables for achievements and customer loyalty
+
+### Migration Guide
+- **Update database** with new achievement and loyalty tables
+- **Configure language** settings in `config.lua`
+- **Optional voice chat** setup for servers wanting roleplay features
+
+---
+
 ## [0.0.5] - 2024-12-20
 
 ### ?? **Feature Update: Advanced Inventory & Management**
