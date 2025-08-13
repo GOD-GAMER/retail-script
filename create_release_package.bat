@@ -1,6 +1,6 @@
 @echo off
 echo ========================================
-echo  Creating Release Package
+echo  Creating Release Package v0.0.3
 echo ========================================
 echo.
 
@@ -16,6 +16,7 @@ copy "README.md" "retail_jobs\" >nul
 copy "CHANGELOG.md" "retail_jobs\" >nul
 copy "TROUBLESHOOTING.md" "retail_jobs\" >nul
 copy "LICENSE" "retail_jobs\" >nul
+copy "FIVEM_KEYBIND_INTEGRATION.md" "retail_jobs\" >nul
 
 echo Copying folders...
 xcopy "shared" "retail_jobs\shared\" /e /i /q >nul
@@ -24,15 +25,21 @@ xcopy "client" "retail_jobs\client\" /e /i /q >nul
 xcopy "html" "retail_jobs\html\" /e /i /q >nul
 
 echo Creating ZIP file...
-powershell -command "Compress-Archive -Path 'retail_jobs' -DestinationPath 'retail_jobs-v0.0.2.zip' -Force"
+powershell -command "Compress-Archive -Path 'retail_jobs' -DestinationPath 'retail_jobs-v0.0.3.zip' -Force"
 
-if exist "retail_jobs-v0.0.2.zip" (
+if exist "retail_jobs-v0.0.3.zip" (
     echo.
-    echo ? SUCCESS: Release package created!
+    echo ? SUCCESS: Release package v0.0.3 created!
     echo.
-    echo ?? File: retail_jobs-v0.0.2.zip
+    echo ?? File: retail_jobs-v0.0.3.zip
     echo ?? Size: 
-    dir "retail_jobs-v0.0.2.zip" | findstr "retail_jobs-v0.0.2.zip"
+    dir "retail_jobs-v0.0.3.zip" | findstr "retail_jobs-v0.0.3.zip"
+    echo.
+    echo ? NEW IN v0.0.3:
+    echo - FiveM Native Keybind Integration
+    echo - Fixed interaction conflicts
+    echo - Enhanced new player experience
+    echo - Professional keybind system
     echo.
     echo This file is ready to upload to your GitHub release!
     echo.

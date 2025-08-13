@@ -75,11 +75,31 @@ jobs:
         # Create the retail_jobs folder structure
         mkdir -p retail_jobs
         
-        # Copy all files except git and github folders
-        rsync -av --exclude='.git' --exclude='.github' --exclude='*.zip' . retail_jobs/
+        # Copy essential files for FiveM installation
+        cp fxmanifest.lua retail_jobs/
+        cp config.lua retail_jobs/
+        cp database.sql retail_jobs/
+        cp README.md retail_jobs/
+        cp CHANGELOG.md retail_jobs/
+        cp TROUBLESHOOTING.md retail_jobs/
+        cp LICENSE retail_jobs/
+        cp FIVEM_KEYBIND_INTEGRATION.md retail_jobs/ || echo "FiveM keybind guide not found"
         
-        # Create zip file
+        # Copy essential folders
+        cp -r shared retail_jobs/ 2>/dev/null || echo "shared folder not found"
+        cp -r server retail_jobs/ 2>/dev/null || echo "server folder not found"  
+        cp -r client retail_jobs/ 2>/dev/null || echo "client folder not found"
+        cp -r html retail_jobs/ 2>/dev/null || echo "html folder not found"
+        
+        # Create zip file with version tag
         zip -r retail_jobs-${{ github.event.release.tag_name }}.zip retail_jobs/
+        
+        # Display package contents for verification
+        echo "Package contents:"
+        ls -la retail_jobs/
+        
+        # Show package size
+        ls -lh *.zip
     
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1

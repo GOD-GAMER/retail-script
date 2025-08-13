@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.3] - 2024-12-19
+
+### ?? **FiveM Native Keybind Integration**
+
+#### Added
+- **FiveM Settings Menu Integration** - Keybinds now appear in FiveM Settings > Key Bindings > FiveM
+- **Professional Keybind System** - Same system used by ESX, QBCore, and other major frameworks
+- **Native RegisterKeyMapping** - Uses FiveM's built-in keybind registration system
+- **Real-time Customization** - Players can change keybinds instantly without resource restart
+- **Controller Support** - Can bind to gamepad buttons through FiveM settings
+- **Conflict Prevention** - FiveM automatically prevents duplicate key assignments
+
+#### Enhanced
+- **Interaction Priority System** - Fixed overlapping interaction issues
+- **Separate Clock In/Out Zones** - Dedicated areas prevent work station conflicts  
+- **Smart Distance Management** - Different interaction ranges for different functions
+- **New Player Experience** - Starting bonuses and tutorial system for better onboarding
+- **Experience Progression** - Enhanced XP system with multiple earning sources
+
+#### Fixed
+- **Clock Out Issues** - Can now reliably clock out without conflicts
+- **Work Station Overlap** - Cash register and inventory interactions properly separated
+- **Interaction Cooldown** - Prevents accidental double-interactions
+- **Keybind Conflicts** - Eliminated through FiveM native system
+
+#### Keybind Details
+- `retail_interact` - Interact with work stations and customers (Default: E)
+- `retail_menu` - Open job management menu (Default: F6)
+- `retail_quickserve` - Quick serve nearest customer (Default: G)
+
+#### Commands Added
+- `/retailhelp` - Show keybind information and help
+- `/retailkeybinds` - Display current keybind assignments
+- `addexp [playerid] [amount]` - Admin command to give experience
+- `promoteplayer [playerid] [rank]` - Admin command to promote players
+
+#### New Player System
+- **Starting Experience**: 100 XP welcome bonus
+- **Tutorial Tasks**: Guided progression with XP rewards
+- **First-Time Bonuses**: Extra XP for initial job actions
+- **Progressive Learning**: Balanced experience curve for beginners
+
+### Breaking Changes
+- **Keybind System Replaced** - Old custom keybind system removed in favor of FiveM native
+- **Config Changes** - UI.keybinds section restructured (automatic migration)
+
+### Migration Guide
+- **No action required** - Existing installations automatically use new system
+- **Player Benefits** - Players can now customize keybinds in familiar FiveM settings
+- **Server Benefits** - No more keybind-related support requests
+
+---
+
 ## [0.0.2] - 2024-12-19
 
 ### ?? Initial Release
@@ -66,6 +119,7 @@ retail_jobs/
 ?   ??? main.lua           # Main client script
 ?   ??? customer_ai.lua    # NPC AI system
 ?   ??? optimization.lua   # Performance optimization
+?   ??? keybind_manager.lua # FiveM native keybind system
 ??? html/
     ??? index.html         # UI interface
     ??? style.css          # Modern styling
@@ -85,18 +139,15 @@ retail_jobs/
 - Store locations and products
 - NPC customer behavior settings
 - Performance optimization options
-- UI keybinds and settings
+- FiveM native keybind integration
 
 ### Known Issues
-- None reported in initial release
+- None reported in this release
 
 ### Installation Requirements
 - FiveM Server (latest version recommended)
 - Optional: MySQL database for persistent storage
 - Optional: ESX or QBCore framework
-
-### Breaking Changes
-- N/A (Initial release)
 
 ---
 

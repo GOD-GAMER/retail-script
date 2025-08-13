@@ -17,10 +17,15 @@ local jobType = nil
 local npcCustomers = {}
 local workStations = {}
 local isWorking = false
+local lastInteractionTime = 0
+local isFirstTimePlayer = true
 
 -- UI State
 local showingUI = false
 local uiData = {}
+
+-- Current interaction state
+local currentInteractions = {}
 
 -- Initialize
 Citizen.CreateThread(function()
@@ -60,12 +65,16 @@ Citizen.CreateThread(function()
     TriggerServerEvent('retail:playerLoaded')
 end)
 
--- Main Loop
+-- Enhanced Main Loop with Interaction Priority System
 Citizen.CreateThread(function()
     while true do
         local playerPed = PlayerPedId()
         local playerCoords = GetEntityCoords(playerPed)
         local sleep = 1000
+        local currentTime = GetGameTimer()
+        
+        -- Clear current interactions
+        currentInteractions = {}
         
         -- Check nearby stores
         local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
@@ -74,78 +83,183 @@ Citizen.CreateThread(function()
             sleep = 100
             nearbyStore = closestStore
             
-            -- Show store markers and interactions
-            if distance < 3.0 then
-                sleep = 0
-                
-                -- Clock in/out interaction
-                if not onDuty then
-                    DrawText3D(closestStore.coords.x, closestStore.coords.y, closestStore.coords.z + 1.0, 
-                              '[E] Clock In - ' .. closestStore.name)
-                    
-                    if IsControlJustPressed(0, Config.UI.keybinds.interact) then
-                        ClockIn(closestStore.id, closestStore.type)
-                    end
-                elseif onDuty and currentStoreId == closestStore.id then
-                    DrawText3D(closestStore.coords.x, closestStore.coords.y, closestStore.coords.z + 1.0, 
-                              '[E] Clock Out')
-                    
-                    if IsControlJustPressed(0, Config.UI.keybinds.interact) then
-                        ClockOut()
-                    end
-                end
+            -- Check for interactions based on priority
+            CheckClockInOutInteraction(closestStore, playerCoords, currentTime)
+            
+            if onDuty and currentStoreId == closestStore.id then
+                CheckWorkStationInteractions(closestStore, playerCoords, currentTime)
+                CheckCustomerInteractions(playerCoords, currentTime)
             end
             
-            -- Work station interactions when on duty
-            if onDuty and currentStoreId == closestStore.id then
-                CheckWorkStations(closestStore, playerCoords)
-            end
+            -- Display highest priority interaction
+            DisplayInteraction()
         else
             nearbyStore = nil
-        end
-        
-        -- Job menu
-        if onDuty and IsControlJustPressed(0, Config.UI.keybinds.menu) then
-            OpenJobMenu()
-        end
-        
-        -- Quick serve
-        if onDuty and IsControlJustPressed(0, Config.UI.keybinds.quick_serve) then
-            QuickServeNearestCustomer()
         end
         
         Citizen.Wait(sleep)
     end
 end)
 
--- Work Stations Management
-function CheckWorkStations(store, playerCoords)
+-- Handle keybind input using FiveM native system
+function HandleKeybindInput()
+    -- The keybinds are now handled by FiveM's native system
+    -- We just need to listen for our custom events
+end
+
+-- Event handlers for FiveM native keybinds
+RegisterNetEvent('retail:localInteract')
+AddEventHandler('retail:localInteract', function()
+    HandleInteraction()
+end)
+
+RegisterNetEvent('retail:localOpenMenu')
+AddEventHandler('retail:localOpenMenu', function()
+    OpenJobMenu()
+end)
+
+RegisterNetEvent('retail:localQuickServe')
+AddEventHandler('retail:localQuickServe', function()
+    QuickServeNearestCustomer()
+end)
+
+-- Display the highest priority interaction
+function DisplayInteraction()
+    if #currentInteractions == 0 then return end
+    
+    -- Sort by priority (highest first)
+    table.sort(currentInteractions, function(a, b)
+        return a.priority > b.priority
+    end)
+    
+    local topInteraction = currentInteractions[1]
+    local coords = topInteraction.coords
+    
+    -- Adjust height based on interaction type
+    local height = 1.0
+    if topInteraction.type == 'workStation' then
+        height = 0.5
+    elseif topInteraction.type == 'customer' then
+        height = 0.2
+    end
+    
+    -- Use the FiveM keybind display text
+    local displayText = topInteraction.text
+    if topInteraction.type == 'clockInOut' or topInteraction.type == 'workStation' then
+        displayText = displayText:gsub('%[E%]', '[INTERACT]') -- Replace with generic text
+    elseif topInteraction.type == 'customer' then
+        displayText = displayText:gsub('%[G%]', '[QUICK SERVE]') -- Replace with generic text
+    end
+    
+    DrawText3D(coords.x, coords.y, coords.z + height, displayText)
+end
+
+-- Check clock in/out interactions (highest priority)
+function CheckClockInOutInteraction(store, playerCoords, currentTime)
+    local clockCoords = store.clockInOut or store.coords
+    local distance = RetailJobs.GetDistance(playerCoords, clockCoords)
+    
+    if distance < Config.Interactions.distances.clockInOut then
+        local interaction = {
+            type = 'clockInOut',
+            priority = Config.Interactions.priorities.clockInOut,
+            coords = clockCoords,
+            action = function()
+                if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
+                lastInteractionTime = currentTime
+                
+                if not onDuty then
+                    ClockIn(store.id, store.type)
+                elseif currentStoreId == store.id then
+                    ClockOut()
+                end
+            end
+        }
+        
+        if not onDuty then
+            interaction.text = '[INTERACT] Clock In - ' .. store.name
+        elseif onDuty and currentStoreId == store.id then
+            interaction.text = '[INTERACT] Clock Out'
+        end
+        
+        if interaction.text then
+            table.insert(currentInteractions, interaction)
+        end
+    end
+end
+
+-- Check work station interactions
+function CheckWorkStationInteractions(store, playerCoords, currentTime)
     if not store.workStations then return end
     
     for stationType, coords in pairs(store.workStations) do
         local distance = RetailJobs.GetDistance(playerCoords, coords)
         
-        if distance < 2.0 then
-            local actionText = GetWorkStationText(stationType)
-            DrawText3D(coords.x, coords.y, coords.z + 0.5, actionText)
+        if distance < Config.Interactions.distances.workStation then
+            local interaction = {
+                type = 'workStation',
+                subType = stationType,
+                priority = Config.Interactions.priorities.workStation,
+                coords = coords,
+                text = '[INTERACT] ' .. GetWorkStationText(stationType),
+                action = function()
+                    if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
+                    lastInteractionTime = currentTime
+                    PerformWorkStationAction(stationType, store)
+                end
+            }
             
-            if IsControlJustPressed(0, Config.UI.keybinds.interact) then
-                PerformWorkStationAction(stationType, store)
-            end
+            table.insert(currentInteractions, interaction)
         end
+    end
+end
+
+-- Check customer interactions
+function CheckCustomerInteractions(playerCoords, currentTime)
+    local nearbyCustomers = GetNearbyCustomers()
+    
+    if #nearbyCustomers > 0 then
+        local interaction = {
+            type = 'customer',
+            priority = Config.Interactions.priorities.customer,
+            coords = playerCoords,
+            text = '[QUICK SERVE] Serve Customer (' .. #nearbyCustomers .. ' nearby)',
+            action = function()
+                if currentTime - lastInteractionTime < Config.Interactions.cooldown then return end
+                lastInteractionTime = currentTime
+                QuickServeNearestCustomer()
+            end
+        }
+        
+        table.insert(currentInteractions, interaction)
+    end
+end
+
+-- Handle the top priority interaction
+function HandleInteraction()
+    if #currentInteractions == 0 then return end
+    
+    -- Sort by priority and execute the highest priority action
+    table.sort(currentInteractions, function(a, b)
+        return a.priority > b.priority
+    end)
+    
+    local topInteraction = currentInteractions[1]
+    if topInteraction.action then
+        topInteraction.action()
     end
 end
 
 function GetWorkStationText(stationType)
     local texts = {
-        cashier = '[E] Serve Customers',
-        kitchen = '[E] Prepare Food',
-        inventory = '[E] Manage Inventory',
-        office = '[E] Management Tasks',
-        drive_thru = '[E] Drive-Thru Service'
+        cashier = 'Serve Customers',
+        kitchen = 'Prepare Food',
+        inventory = 'Manage Inventory',
+        office = 'Management Tasks',
+        drive_thru = 'Drive-Thru Service'
     }
     
-    return texts[stationType] or '[E] Interact'
+    return texts[stationType] or 'Interact'
 end
 
 function PerformWorkStationAction(stationType, store)
@@ -162,22 +276,31 @@ function PerformWorkStationAction(stationType, store)
     end
 end
 
--- Clock In/Out Functions
+-- Clock In/Out Functions with New Player Bonus
 function ClockIn(storeId, jobType)
     TriggerServerEvent('retail:clockIn', storeId, jobType)
+    
+    -- Check if this is the player's first time
+    if isFirstTimePlayer then
+        isFirstTimePlayer = false
+        TriggerServerEvent('retail:firstTimeBonus')
+    end
 end
 
 function ClockOut()
     TriggerServerEvent('retail:clockOut')
 end
 
--- Menu Systems
+-- Enhanced Menu Systems
 function OpenJobMenu()
     local elements = {
         {label = 'View Stats', value = 'stats'},
         {label = 'Current Rank: ' .. (playerData.rank and Config.Ranks[playerData.rank].name or 'Trainee'), value = 'rank'},
         {label = 'Experience: ' .. (playerData.experience or 0), value = 'experience'},
-        {label = 'Today\'s Earnings: $' .. (playerData.earnings or 0), value = 'earnings'}
+        {label = 'Today\'s Earnings: $' .. (playerData.earnings or 0), value = 'earnings'},
+        {label = '--- Controls ---', value = 'separator'},
+        {label = 'Keybind Help (/retailhelp)', value = 'keybinds'},
+        {label = '--- Job Functions ---', value = 'separator'}
     }
     
     if playerData.rank and playerData.rank >= 4 then -- Team Leader+
@@ -194,6 +317,8 @@ function OpenJobMenu()
             OpenManagementMenu()
         elseif data.current.value == 'training' then
             OpenTrainingMenu()
+        elseif data.current.value == 'keybinds' then
+            RetailKeybinds.ShowHelp()
         elseif data.current.value == 'clockout' then
             ClockOut()
             CloseMenu(menu)
@@ -262,7 +387,7 @@ function OpenManagementMenu()
     end)
 end
 
--- Customer System
+-- Enhanced Customer System
 function SpawnCustomerNPC()
     if not Config.NPCCustomers.enabled or not onDuty then return end
     
@@ -359,6 +484,15 @@ function ServeCustomer(customerId)
     end)
 end
 
+function QuickServeNearestCustomer()
+    local nearbyCustomers = GetNearbyCustomers()
+    if #nearbyCustomers > 0 then
+        ServeCustomer(nearbyCustomers[1])
+    else
+        ShowNotification('No customers nearby to serve', 'info')
+    end
+end
+
 function DeleteCustomer(customerId)
     local customer = npcCustomers[customerId]
     if customer and customer.entity then
@@ -376,7 +510,7 @@ function GetNearbyCustomers()
             local customerCoords = GetEntityCoords(customer.entity)
             local distance = RetailJobs.GetDistance(playerCoords, customerCoords)
             
-            if distance < 5.0 then
+            if distance < Config.Interactions.distances.customer then
                 table.insert(nearby, customerId)
             end
         end
@@ -385,7 +519,7 @@ function GetNearbyCustomers()
     return nearby
 end
 
--- Utility Functions
+-- Enhanced Utility Functions
 function ShowNotification(message, type, duration)
     SetNotificationTextEntry("STRING")
     AddTextComponentString(message)
@@ -510,6 +644,14 @@ AddEventHandler('retail:notify', function(message, type, duration)
     ShowNotification(message, type, duration)
 end)
 
+RegisterNetEvent('retail:newPlayerWelcome')
+AddEventHandler('retail:newPlayerWelcome', function()
+    if Config.NewPlayerBonus.enabled then
+        ShowNotification('?? ' .. Config.NewPlayerBonus.welcomeMessage, 'success', 10000)
+        ShowNotification('You\'ve received ' .. Config.NewPlayerBonus.startingExperience .. ' starting experience!', 'success', 8000)
+    end
+end)
+
 -- Menu system (placeholder - replace with your preferred menu system)
 function OpenMenu(menuId, title, elements, onSelect)
     -- This should be replaced with your actual menu system
@@ -519,7 +661,9 @@ function OpenMenu(menuId, title, elements, onSelect)
     
     print('Opening menu: ' .. title)
     for i, element in ipairs(elements) do
-        print(i .. '. ' .. element.label)
+        if element.value ~= 'separator' then
+            print(i .. '. ' .. element.label)
+        end
     end
 end
 

@@ -43,7 +43,36 @@ Config.Ranks = {
     [10] = { name = 'CEO', salary = 3000, required_exp = 60000, perks = {'unlimited_perks', 'company_car'} }
 }
 
--- Store Locations
+-- New Player Experience System
+Config.NewPlayerBonus = {
+    enabled = true,
+    startingExperience = 100, -- Start with some experience
+    welcomeMessage = "Welcome to your first retail job! You've been given basic training.",
+    initialTasks = {
+        {name = "Clock In Tutorial", experience = 25, description = "Learn how to clock in and out"},
+        {name = "Customer Service Basics", experience = 50, description = "Complete your first customer transaction"},
+        {name = "Inventory Management", experience = 25, description = "Learn how to restock items"}
+    }
+}
+
+-- Interaction System
+Config.Interactions = {
+    distances = {
+        clockInOut = 3.0,      -- Distance for clocking in/out
+        workStation = 2.5,     -- Distance for work stations
+        customer = 4.0,        -- Distance for customer interactions
+        management = 2.0       -- Distance for management tasks
+    },
+    priorities = {
+        clockInOut = 10,       -- Highest priority
+        workStation = 8,       -- Medium-high priority
+        customer = 6,          -- Medium priority
+        management = 4         -- Lower priority
+    },
+    cooldown = 1000           -- 1 second cooldown between interactions
+}
+
+-- Store Locations with improved positioning
 Config.Stores = {
     -- Retail Stores
     {
@@ -52,6 +81,7 @@ Config.Stores = {
         coords = vector3(25.7, -1347.3, 29.49),
         blip = { sprite = 52, color = 2, scale = 0.8 },
         npc = { model = 'a_m_m_business_01', coords = vector4(24.5, -1347.8, 29.49, 270.0) },
+        clockInOut = vector3(24.0, -1345.0, 29.49), -- Separate clock in/out location
         products = {
             {name = 'Sandwich', price = 5, stock = 50},
             {name = 'Water', price = 2, stock = 100},
@@ -70,6 +100,7 @@ Config.Stores = {
         coords = vector3(1961.3, 3740.0, 32.34),
         blip = { sprite = 52, color = 2, scale = 0.8 },
         npc = { model = 'a_m_m_business_01', coords = vector4(1960.8, 3740.5, 32.34, 90.0) },
+        clockInOut = vector3(1959.0, 3738.0, 32.34), -- Separate clock in/out location
         products = {
             {name = 'Sandwich', price = 6, stock = 30},
             {name = 'Water', price = 3, stock = 80},
@@ -88,6 +119,7 @@ Config.Stores = {
         coords = vector3(-1194.26, -884.88, 13.98),
         blip = { sprite = 106, color = 5, scale = 0.8 },
         npc = { model = 'a_f_y_business_02', coords = vector4(-1193.5, -885.2, 13.98, 35.0) },
+        clockInOut = vector3(-1196.0, -882.0, 13.98), -- Separate clock in/out location
         products = {
             {name = 'Burger', price = 12, stock = 40},
             {name = 'Fries', price = 6, stock = 60},
@@ -107,6 +139,7 @@ Config.Stores = {
         coords = vector3(-142.77, 6356.09, 31.49),
         blip = { sprite = 89, color = 17, scale = 0.8 },
         npc = { model = 'a_f_y_business_02', coords = vector4(-142.5, 6356.5, 31.49, 225.0) },
+        clockInOut = vector3(-140.0, 6352.0, 31.49), -- Separate clock in/out location
         products = {
             {name = 'Chicken Burger', price = 14, stock = 35},
             {name = 'Wings', price = 10, stock = 45},
@@ -151,7 +184,9 @@ Config.Experience = {
     handling_complaint = 15,
     perfect_service = 20,
     overtime_bonus = 50,
-    monthly_bonus = 200
+    monthly_bonus = 200,
+    first_clock_in = 50,      -- Bonus for first time clocking in
+    tutorial_completion = 100  -- Bonus for completing tutorial
 }
 
 -- Optimization Settings
@@ -163,15 +198,17 @@ Config.Optimization = {
     enableLOD = true
 }
 
--- UI Settings
+-- UI Settings with FiveM Native Keybinds
 Config.UI = {
-    keybinds = {
-        interact = 38, -- E key
-        menu = 167,    -- F6 key
-        quick_serve = 47 -- G key
-    },
     notifications = {
         position = 'top-right',
         duration = 5000
+    },
+    -- Note: Keybinds are now managed by FiveM's native system
+    -- Players can customize them in: Settings > Key Bindings > FiveM
+    keybindInfo = {
+        interact = "retail_interact", -- FiveM keybind name
+        menu = "retail_menu",         -- FiveM keybind name  
+        quick_serve = "retail_quickserve" -- FiveM keybind name
     }
 }

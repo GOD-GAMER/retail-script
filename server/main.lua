@@ -43,6 +43,7 @@ AddEventHandler('retail:playerLoaded', function()
         onDuty = false,
         storeId = nil,
         earnings = 0,
+        isNewPlayer = true, -- Track if player is new
         stats = {
             customersServed = 0,
             itemsSold = 0,
@@ -71,6 +72,7 @@ function LoadPlayerJobData(playerId)
                 onDuty = false,
                 storeId = nil,
                 earnings = data.earnings,
+                isNewPlayer = false, -- Not new if they have data
                 stats = json.decode(data.stats) or {}
             }
         end
@@ -95,7 +97,7 @@ function SavePlayerJobData(playerId)
     end
 end
 
--- Job Management
+-- Job Management with New Player Bonus
 RegisterNetEvent('retail:clockIn')
 AddEventHandler('retail:clockIn', function(storeId, jobType)
     local playerId = source
@@ -108,6 +110,7 @@ AddEventHandler('retail:clockIn', function(storeId, jobType)
             onDuty = false,
             storeId = nil,
             earnings = 0,
+            isNewPlayer = true,
             stats = {
                 customersServed = 0,
                 itemsSold = 0,
@@ -132,6 +135,30 @@ AddEventHandler('retail:clockIn', function(storeId, jobType)
     if currentEmployees >= maxEmployees then
         TriggerClientEvent('retail:notify', playerId, 'This store is at maximum capacity!', 'error')
         return
+    end
+    
+    -- Handle new player bonus
+    if playerJobs[playerId].isNewPlayer and playerJobs[playerId].experience == 0 and Config.NewPlayerBonus.enabled then
+        playerJobs[playerId].experience = Config.NewPlayerBonus.startingExperience
+        playerJobs[playerId].isNewPlayer = false
+        
+        -- Check for automatic promotion
+        local newRank = RetailJobs.GetPlayerRank(playerJobs[playerId].experience)
+        if newRank > playerJobs[playerId].rank then
+            playerJobs[playerId].rank = newRank
+            local rankData = Config.Ranks[newRank]
+            TriggerClientEvent('retail:promoted', playerId, newRank, rankData)
+        end
+        
+        -- Send welcome message
+        TriggerClientEvent('retail:newPlayerWelcome', playerId)
+        
+        -- Add first clock in bonus
+        Citizen.SetTimeout(2000, function()
+            TriggerEvent('retail:addExperience', playerId, Config.Experience.first_clock_in, 'First Time Clocking In')
+        end)
+        
+        SavePlayerJobData(playerId)
     end
     
     playerJobs[playerId].job = jobType
@@ -268,6 +295,11 @@ AddEventHandler('retail:serveCustomer', function(customerId, items, total)
         TriggerEvent('retail:addExperience', playerId, Config.Experience.perfect_service, 'Perfect Service Bonus')
     end
     
+    -- Check for tutorial task completion
+    if playerJobs[playerId].stats.customersServed == 1 then
+        TriggerEvent('retail:completeTask', playerId, 'Customer Service Basics')
+    end
+    
     TriggerClientEvent('retail:saleCompleted', playerId, commission, total)
     TriggerClientEvent('retail:removeCustomer', -1, customerId)
     
@@ -295,8 +327,70 @@ AddEventHandler('retail:restockItem', function(storeId, productName, quantity)
                 product.stock = product.stock + quantity
                 TriggerClientEvent('retail:notify', playerId, 'Restocked ' .. quantity .. ' ' .. productName, 'success')
                 TriggerEvent('retail:addExperience', playerId, Config.Experience.restocking, 'Restocking')
+                
+                -- Check for tutorial task completion
+                TriggerEvent('retail:completeTask', playerId, 'Inventory Management')
                 break
             end
+        end
+    end
+end)
+
+-- Enhanced task completion system
+RegisterNetEvent('retail:completeTask')
+AddEventHandler('retail:completeTask', function(taskName)
+    local playerId = source
+    
+    if not playerJobs[playerId] then return end
+    
+    -- Find the task in initial tasks
+    if Config.NewPlayerBonus.enabled and Config.NewPlayerBonus.initialTasks then
+        for _, task in ipairs(Config.NewPlayerBonus.initialTasks) do
+            if task.name == taskName then
+                TriggerEvent('retail:addExperience', playerId, task.experience, task.description)
+                TriggerClientEvent('retail:notify', playerId, 'Task completed: ' .. task.name .. ' (+' .. task.experience .. ' XP)', 'success')
+                break
+            end
+        end
+    end
+end)
+
+-- Admin commands for experience management
+RegisterCommand('addexp', function(source, args)
+    if source == 0 then -- Server console only
+        if #args == 2 then
+            local playerId = tonumber(args[1])
+            local amount = tonumber(args[2])
+            
+            if playerId and amount and playerJobs[playerId] then
+                TriggerEvent('retail:addExperience', playerId, amount, 'Admin Grant')
+                print('Added ' .. amount .. ' experience to player ' .. playerId)
+            else
+                print('Usage: addexp [playerid] [amount]')
+            end
+        else
+            print('Usage: addexp [playerid] [amount]')
+        end
+    end
+end)
+
+RegisterCommand('promoteplayer', function(source, args)
+    if source == 0 then -- Server console only
+        if #args == 2 then
+            local playerId = tonumber(args[1])
+            local rank = tonumber(args[2])
+            
+            if playerId and rank and playerJobs[playerId] and Config.Ranks[rank] then
+                playerJobs[playerId].rank = rank
+                playerJobs[playerId].experience = Config.Ranks[rank].required_exp
+                TriggerClientEvent('retail:promoted', playerId, rank, Config.Ranks[rank])
+                TriggerClientEvent('retail:notify', playerId, 'You have been promoted by an administrator!', 'success')
+                print('Promoted player ' .. playerId .. ' to rank ' .. rank)
+            else
+                print('Usage: promoteplayer [playerid] [rank] (rank 1-10)')
+            end
+        else
+            print('Usage: promoteplayer [playerid] [rank] (rank 1-10)')
         end
     end
 end)

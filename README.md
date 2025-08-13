@@ -214,9 +214,11 @@ Config.Ranks = {
 5. **Climb the Ladder**: Gain experience to unlock promotions
 
 #### Controls
-- `E` - Interact with customers/work stations
-- `F6` - Open job menu
-- `G` - Quick serve nearest customer
+- **INTERACT** - Interact with customers/work stations (Default: E, customizable in FiveM settings)
+- **JOB MENU** - Open job menu (Default: F6, customizable in FiveM settings)  
+- **QUICK SERVE** - Quick serve nearest customer (Default: G, customizable in FiveM settings)
+
+> **Note:** All keybinds can be customized in **FiveM Settings > Key Bindings > FiveM**. Look for "Retail Jobs" entries.
 
 #### Work Stations
 - **Cashier**: Process customer transactions
@@ -376,8 +378,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Version**: 0.0.2  
+**Version**: 0.0.3  
 **Repository**: https://github.com/GOD-GAMER/retail-script  
 **Compatibility**: FiveM, ESX, QBCore  
 **Requirements**: None (MySQL optional)  
 **Performance**: Optimized for 30+ concurrent players
+
+## ?? **New in v0.0.3: FiveM Native Keybind Integration**
+
+- ? **Professional Keybind System** - Keybinds appear in FiveM Settings > Key Bindings > FiveM
+- ? **Fixed Interaction Conflicts** - Separate zones for clock in/out and work stations
+- ? **Enhanced New Player Experience** - Starting bonuses and tutorial system
+- ? **Real-time Customization** - Change keybinds instantly like ESX resources
