@@ -713,9 +713,10 @@ AddEventHandler('retail:newPlayerWelcome', function()
     end
 end)
 
--- Debug command for troubleshooting
+-- Debug command for troubleshooting positions
 RegisterCommand('retaildebug', function()
-    local playerCoords = GetEntityCoords(PlayerPedId())
+    local playerPed = PlayerPedId()
+    local playerCoords = GetEntityCoords(playerPed)
     local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
     local currentTime = GetGameTimer()
     local timeSinceLastInteraction = currentTime - lastInteractionTime
@@ -765,6 +766,8 @@ RegisterCommand('retaildebug', function()
 ^2Distance to Clock:^0 %.2f
 ^2Required Distance:^0 %.2f
 ^2Can Clock In:^0 %s
+
+^3=== WORK STATIONS ===^0
         ]],
         closestStore.coords.x, closestStore.coords.y, closestStore.coords.z,
         clockCoords.x, clockCoords.y, clockCoords.z,
@@ -772,6 +775,15 @@ RegisterCommand('retaildebug', function()
         Config.Interactions.distances.clockInOut,
         clockDistance < Config.Interactions.distances.clockInOut and "Yes" or "No"
         )
+        
+        -- Add work station distances
+        if closestStore.workStations then
+            for stationType, coords in pairs(closestStore.workStations) do
+                local workDistance = RetailJobs.GetDistance(playerCoords, coords)
+                storeDebug = storeDebug .. string.format("^2%s:^0 %.2f, %.2f, %.2f (%.2f units away)\n", 
+                    stationType, coords.x, coords.y, coords.z, workDistance)
+            end
+        end
         
         TriggerEvent('chat:addMessage', {
             color = {255, 255, 255},

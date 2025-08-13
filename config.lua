@@ -72,17 +72,23 @@ Config.Interactions = {
     cooldown = 100            -- Reduced cooldown to 0.1 seconds (was 500ms)
 }
 
--- Store Locations with improved positioning
+-- Store Locations with optimized interaction positioning
+-- NOTE: All interaction points have been positioned to avoid walls and obstacles
+-- clockInOut: Positioned at store entrances for easy access
+-- cashier: Positioned at service counters 
+-- inventory: Positioned in storage/back areas
+-- office: Positioned in accessible office spaces
+-- kitchen: Positioned in cooking areas (fast food only)
 Config.Stores = {
     -- Retail Stores
     {
         id = 1,
         type = 'retail',
         name = 'Downtown General Store',
-        coords = vector3(25.7, -1347.3, 29.49),
+        coords = vector3(25.7, -1347.3, 29.49), -- Store center/blip location
         blip = { sprite = 52, color = 2, scale = 0.8 },
         npc = { model = 'a_m_m_business_01', coords = vector4(24.5, -1347.8, 29.49, 270.0) },
-        clockInOut = vector3(24.0, -1345.0, 29.49), -- Separate clock in/out location
+        clockInOut = vector3(28.0, -1339.0, 29.49), -- OUTSIDE: Near main entrance
         products = {
             {name = 'Sandwich', price = 5, stock = 50},
             {name = 'Water', price = 2, stock = 100},
@@ -90,28 +96,28 @@ Config.Stores = {
             {name = 'Cigarettes', price = 15, stock = 20}
         },
         workStations = {
-            cashier = vector3(25.0, -1347.0, 29.49),
-            inventory = vector3(27.0, -1349.0, 29.49),
-            office = vector3(23.0, -1350.0, 29.49)
+            cashier = vector3(25.7, -1346.5, 29.49), -- At service counter
+            inventory = vector3(28.5, -1349.0, 29.49), -- In storage area
+            office = vector3(30.0, -1342.0, 29.49) -- In manager's office area
         }
     },
     {
         id = 2,
         type = 'retail',
         name = 'Sandy Shores Market',
-        coords = vector3(1961.3, 3740.0, 32.34),
+        coords = vector3(1961.3, 3740.0, 32.34), -- Store center/blip location
         blip = { sprite = 52, color = 2, scale = 0.8 },
         npc = { model = 'a_m_m_business_01', coords = vector4(1960.8, 3740.5, 32.34, 90.0) },
-        clockInOut = vector3(1959.0, 3738.0, 32.34), -- Separate clock in/out location
+        clockInOut = vector3(1963.5, 3742.5, 32.34), -- OUTSIDE: Near main entrance
         products = {
             {name = 'Sandwich', price = 6, stock = 30},
             {name = 'Water', price = 3, stock = 80},
             {name = 'Snacks', price = 4, stock = 40}
         },
         workStations = {
-            cashier = vector3(1961.0, 3740.0, 32.34),
-            inventory = vector3(1963.0, 3742.0, 32.34),
-            office = vector3(1958.0, 3738.0, 32.34)
+            cashier = vector3(1961.3, 3740.5, 32.34), -- At service counter
+            inventory = vector3(1959.0, 3738.0, 32.34), -- In storage area
+            office = vector3(1964.0, 3743.0, 32.34) -- In back office
         }
     },
     -- Fast Food Stores
@@ -119,10 +125,10 @@ Config.Stores = {
         id = 3,
         type = 'fastfood',
         name = 'Burger Shot Downtown',
-        coords = vector3(-1194.26, -884.88, 13.98),
+        coords = vector3(-1194.26, -884.88, 13.98), -- Store center/blip location
         blip = { sprite = 106, color = 5, scale = 0.8 },
         npc = { model = 'a_f_y_business_02', coords = vector4(-1193.5, -885.2, 13.98, 35.0) },
-        clockInOut = vector3(-1196.0, -882.0, 13.98), -- Separate clock in/out location
+        clockInOut = vector3(-1195.5, -889.0, 13.98), -- OUTSIDE: Near main entrance
         products = {
             {name = 'Burger', price = 12, stock = 40},
             {name = 'Fries', price = 6, stock = 60},
@@ -130,29 +136,29 @@ Config.Stores = {
             {name = 'Milkshake', price = 8, stock = 30}
         },
         workStations = {
-            cashier = vector3(-1194.0, -885.0, 13.98),
-            kitchen = vector3(-1196.0, -887.0, 13.98),
-            drive_thru = vector3(-1192.0, -883.0, 13.98),
-            office = vector3(-1198.0, -889.0, 13.98)
+            cashier = vector3(-1194.0, -884.5, 13.98), -- At front counter
+            kitchen = vector3(-1196.5, -887.5, 13.98), -- In kitchen area
+            drive_thru = vector3(-1192.0, -883.0, 13.98), -- At drive-thru window
+            office = vector3(-1197.0, -886.0, 13.98) -- In back office
         }
     },
     {
         id = 4,
         type = 'fastfood',
         name = 'Cluckin Bell Paleto',
-        coords = vector3(-142.77, 6356.09, 31.49),
+        coords = vector3(-142.77, 6356.09, 31.49), -- Store center/blip location
         blip = { sprite = 89, color = 17, scale = 0.8 },
         npc = { model = 'a_f_y_business_02', coords = vector4(-142.5, 6356.5, 31.49, 225.0) },
-        clockInOut = vector3(-140.0, 6352.0, 31.49), -- Separate clock in/out location
+        clockInOut = vector3(-145.0, 6353.0, 31.49), -- OUTSIDE: Near main entrance
         products = {
             {name = 'Chicken Burger', price = 14, stock = 35},
             {name = 'Wings', price = 10, stock = 45},
             {name = 'Soda', price = 4, stock = 70}
         },
         workStations = {
-            cashier = vector3(-142.5, 6356.0, 31.49),
-            kitchen = vector3(-144.0, 6358.0, 31.49),
-            office = vector3(-140.0, 6354.0, 31.49)
+            cashier = vector3(-142.5, 6356.5, 31.49), -- At service counter
+            kitchen = vector3(-144.5, 6358.5, 31.49), -- In kitchen area  
+            office = vector3(-140.5, 6354.0, 31.49) -- In accessible office
         }
     }
 }
