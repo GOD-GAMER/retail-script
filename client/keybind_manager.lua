@@ -222,6 +222,14 @@ RegisterCommand('retailhelp', function()
 ^2/retailhelp^0 - Show this help
 ^2/retailmenu^0 - Open job menu
 ^2/retailinteract^0 - Manual interact
+^2/retaildebug^0 - Show debug information
+^2/retailreset^0 - Reset interaction cooldown
+
+^3=== TROUBLESHOOTING ===^0
+If clock in/out isn't working:
+1. Try ^2/retailreset^0 to clear cooldowns
+2. Use ^2/retaildebug^0 to check status
+3. Make sure you're near the store entrance
     ]]
     TriggerEvent('chat:addMessage', {
         color = {255, 255, 255},

@@ -69,7 +69,7 @@ Config.Interactions = {
         customer = 6,          -- Medium priority
         management = 4         -- Lower priority
     },
-    cooldown = 500            -- Reduced cooldown to 0.5 seconds
+    cooldown = 100            -- Reduced cooldown to 0.1 seconds (was 500ms)
 }
 
 -- Store Locations with improved positioning

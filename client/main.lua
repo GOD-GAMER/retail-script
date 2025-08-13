@@ -148,9 +148,10 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
             storeId = store.id,
             jobType = store.type,
             action = function()
-                if currentTime - lastInteractionTime < Config.Interactions.cooldown then 
+                local timeSinceLastInteraction = currentTime - lastInteractionTime
+                if timeSinceLastInteraction < Config.Interactions.cooldown then 
                     if Config.Debug then
-                        print('[RETAIL] Interaction on cooldown')
+                        print('[RETAIL] Interaction on cooldown (' .. timeSinceLastInteraction .. 'ms < ' .. Config.Interactions.cooldown .. 'ms)')
                     end
                     return 
                 end
@@ -161,6 +162,7 @@ function CheckClockInOutInteraction(store, playerCoords, currentTime)
                     print('[RETAIL] On duty: ' .. tostring(onDuty))
                     print('[RETAIL] Current store ID: ' .. tostring(currentStoreId))
                     print('[RETAIL] Target store ID: ' .. tostring(store.id))
+                    print('[RETAIL] Cooldown cleared, proceeding...')
                 end
                 
                 if not onDuty then
@@ -715,6 +717,8 @@ end)
 RegisterCommand('retaildebug', function()
     local playerCoords = GetEntityCoords(PlayerPedId())
     local closestStore, distance = RetailJobs.GetNearestStore(playerCoords)
+    local currentTime = GetGameTimer()
+    local timeSinceLastInteraction = currentTime - lastInteractionTime
     
     local debugInfo = string.format([[:
 ^3=== RETAIL JOBS DEBUG INFO ===^0
@@ -726,6 +730,9 @@ RegisterCommand('retaildebug', function()
 ^2Active Interaction:^0 %s
 ^2Framework:^0 %s
 ^2ESX Available:^0 %s
+^2Last Interaction:^0 %d ms ago
+^2Cooldown Required:^0 %d ms
+^2Cooldown Clear:^0 %s
     ]], 
     playerCoords.x, playerCoords.y, playerCoords.z,
     closestStore and closestStore.name or "None",
@@ -734,7 +741,10 @@ RegisterCommand('retaildebug', function()
     currentStoreId or "None", 
     activeInteraction and activeInteraction.type or "None",
     Config.Framework,
-    ESX and "Yes" or "No"
+    ESX and "Yes" or "No",
+    timeSinceLastInteraction,
+    Config.Interactions.cooldown,
+    timeSinceLastInteraction >= Config.Interactions.cooldown and "Yes" or "No"
     )
     
     TriggerEvent('chat:addMessage', {
@@ -768,5 +778,14 @@ RegisterCommand('retaildebug', function()
             multiline = true,
             args = {"Store Debug", storeDebug}
         })
+    end
+end, false)
+
+-- Command to reset interaction cooldown
+RegisterCommand('retailreset', function()
+    lastInteractionTime = 0
+    ShowNotification('Interaction cooldown reset!', 'success')
+    if Config.Debug then
+        print('[RETAIL] Interaction cooldown manually reset')
     end
 end, false)
